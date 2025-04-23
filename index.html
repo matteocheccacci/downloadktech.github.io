@@ -68,4 +68,71 @@
       white-space: pre;
       overflow: hidden;
       border-right: 0.15em solid #0f0;
-      animation: blink-caret 0.75s step
+      animation: blink-caret 0.75s step-end infinite;
+    }
+
+    @keyframes blink-caret {
+      from, to { border-color: transparent; }
+      50% { border-color: #0f0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="terminal">
+    <h1 id="typed-title" class="typed"></h1>
+
+    <div id="main-content" style="display: none;">
+      <div class="section">
+        <div class="project">
+          <img src="/path/to/project1-icon.png" alt="Project 1 Icon" class="icon">
+          <h2>Progetto 1</h2>
+          <p>Descrizione: Questo è un tool per fare X.</p>
+          <p>Versione: 1.0.0</p>
+          <p>Dimensione: 2.3 MB</p>
+          <p><a class="download-link" href="/downloads/progetto1.zip">Scarica Progetto 1</a></p>
+        </div>
+
+        <div class="project">
+          <img src="/path/to/project2-icon.png" alt="Project 2 Icon" class="icon">
+          <h2>Progetto 2</h2>
+          <p>Descrizione: Applicazione per fare Y.</p>
+          <p>Versione: 2.1.0</p>
+          <p>Dimensione: 5.7 MB</p>
+          <p><a class="download-link" href="/downloads/progetto2.zip">Scarica Progetto 2</a></p>
+        </div>
+      </div>
+
+      <div class="section">
+        <a href="#" class="btn" onclick="goHome()">Torna alla Home</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function goHome() {
+      window.location.href = "/";
+    }
+
+    function typeLine(text, elementId, callback) {
+      const el = document.getElementById(elementId);
+      let i = 0;
+      function typeChar() {
+        if (i < text.length) {
+          el.textContent += text.charAt(i);
+          i++;
+          setTimeout(typeChar, 40);
+        } else {
+          el.classList.remove('typed');
+          callback && callback();
+        }
+      }
+      typeChar();
+    }
+
+    // Avvia scrittura del titolo
+    typeLine("Download Center kekkotech.com", "typed-title", () => {
+      document.getElementById('main-content').style.display = "block";
+    });
+  </script>
+</body>
+</html>
