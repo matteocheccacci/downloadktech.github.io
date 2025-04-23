@@ -45,6 +45,11 @@
       width: 100%;
       margin-top: 20px;
     }
+    .description {
+      margin-top: 20px;
+      font-size: 16px;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 <body>
@@ -55,6 +60,7 @@
     </div>
     <p><strong>Versione:</strong> <span id="project-version">1.0.0</span></p>
     <p><strong>Dimensione:</strong> <span id="project-size">2.3 MB</span></p>
+    <div class="description" id="project-description">Descrizione del progetto.</div>
     <a id="download-link" class="btn" href="#">Scarica</a>
     <video id="project-video" controls>
       <source src="preview.mp4" type="video/mp4">
@@ -72,13 +78,14 @@
     document.getElementById('project-name').textContent = projectData.title;
     document.getElementById('project-version').textContent = projectData.version;
     document.getElementById('project-size').textContent = projectData.size;
+    document.getElementById('project-description').textContent = projectData.description; // Aggiunto description
     document.getElementById('download-link').href = projectData.downloadLink;
     document.getElementById('project-icon').src = projectData.icon;
     document.getElementById('project-video').querySelector('source').src = projectData.video;
     document.getElementById('project-video').load();
 
     function goHome() {
-      window.open("https://kekkotech.com", "_self");
+      window.open("https://downloads.kekkotech.com", "_self");
       window.close();
     }
   </script>
