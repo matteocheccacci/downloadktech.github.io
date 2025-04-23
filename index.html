@@ -20,43 +20,51 @@
       box-shadow: 0 0 10px #0f0;
     }
 
-    .section {
-      margin-top: 20px;
-    }
-
     .project {
-      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      border-top: 1px dashed #0f0;
+      padding: 10px 0;
     }
 
-    .project h2 {
-      color: #0ff;
+    .info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex: 1;
+      min-width: 200px;
     }
 
-    .project p {
-      margin: 5px 0;
-    }
-
-    .download-link {
-      color: #0ff;
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 120px;
+      margin-top: 10px;
     }
 
     img.icon {
       width: 64px;
       height: 64px;
-      vertical-align: middle;
-      margin-right: 10px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 20px;
+      color: #0ff;
     }
 
     .btn {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 10px 20px;
+      padding: 8px 12px;
       background: #000;
       color: #0f0;
       border: 1px solid #0f0;
       border-radius: 4px;
       text-decoration: none;
       font-family: Consolas, monospace;
+      text-align: center;
     }
 
     .btn:hover {
@@ -75,6 +83,10 @@
       from, to { border-color: transparent; }
       50% { border-color: #0f0; }
     }
+
+    .section {
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
@@ -83,23 +95,31 @@
 
     <div id="main-content" style="display: none;">
       <div class="section">
+
+        <!-- Progetto 1 -->
         <div class="project">
-          <img src="/path/to/project1-icon.png" alt="Project 1 Icon" class="icon">
-          <h2>Progetto 1</h2>
-          <p>Descrizione: Questo è un tool per fare X.</p>
-          <p>Versione: 1.0.0</p>
-          <p>Dimensione: 2.3 MB</p>
-          <p><a class="download-link" href="/downloads/progetto1.zip">Scarica Progetto 1</a></p>
+          <div class="info">
+            <img src="/img/progetti/project1-icon.png" alt="Project 1 Icon" class="icon">
+            <h2>Progetto 1</h2>
+          </div>
+          <div class="buttons">
+            <a class="btn" href="/downloads/progetto1.zip">Download</a>
+            <a class="btn" href="/projects/progetto1.html">Info</a>
+          </div>
         </div>
 
+        <!-- Progetto 2 -->
         <div class="project">
-          <img src="/path/to/project2-icon.png" alt="Project 2 Icon" class="icon">
-          <h2>Progetto 2</h2>
-          <p>Descrizione: Applicazione per fare Y.</p>
-          <p>Versione: 2.1.0</p>
-          <p>Dimensione: 5.7 MB</p>
-          <p><a class="download-link" href="/downloads/progetto2.zip">Scarica Progetto 2</a></p>
+          <div class="info">
+            <img src="/img/progetti/project2-icon.png" alt="Project 2 Icon" class="icon">
+            <h2>Progetto 2</h2>
+          </div>
+          <div class="buttons">
+            <a class="btn" href="/downloads/progetto2.zip">Download</a>
+            <a class="btn" href="/projects/progetto2.html">Info</a>
+          </div>
         </div>
+
       </div>
 
       <div class="section">
@@ -110,7 +130,8 @@
 
   <script>
     function goHome() {
-      window.location.href = "/";
+      window.open("https://kekkotech.com", "_self");
+      window.close(); // Potrebbe non funzionare se la scheda non è stata aperta da JS
     }
 
     function typeLine(text, elementId, callback) {
@@ -129,7 +150,7 @@
       typeChar();
     }
 
-    // Avvia scrittura del titolo
+    // Scrittura effetto digitazione
     typeLine("Download Center kekkotech.com", "typed-title", () => {
       document.getElementById('main-content').style.display = "block";
     });
