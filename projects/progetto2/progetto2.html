@@ -67,7 +67,7 @@
       Il tuo browser non supporta il tag video.
     </video>
     <div class="section">
-      <a href="#" class="btn" onclick="goHome()">Torna alla Home</a>
+      <a href="#" class="btn" onclick="goHome()">Torna indietro</a>
     </div>
   </div>
 
@@ -78,15 +78,15 @@
     document.getElementById('project-name').textContent = projectData.title;
     document.getElementById('project-version').textContent = projectData.version;
     document.getElementById('project-size').textContent = projectData.size;
-    document.getElementById('project-description').textContent = projectData.description; // Aggiunto description
+    document.getElementById('project-description').textContent = projectData.description; // Assicurati che questa variabile esista nel tuo progetto
     document.getElementById('download-link').href = projectData.downloadLink;
     document.getElementById('project-icon').src = projectData.icon;
     document.getElementById('project-video').querySelector('source').src = projectData.video;
     document.getElementById('project-video').load();
 
+    // Funzione per tornare alla pagina precedente
     function goHome() {
-      window.open("https://kekkotech.com", "_self");
-      window.close();
+      window.history.back(); // Torna alla pagina precedente
     }
   </script>
 </body>
