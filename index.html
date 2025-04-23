@@ -1,12 +1,80 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
+<html lang="it">
 <head>
-  <title>Download Center | KEKKOTECH</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Downloads | Kekkotech</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #0f0;
+      font-family: Consolas, monospace;
+      padding: 20px;
+    }
+
+    .terminal {
+      max-width: 800px;
+      margin: auto;
+      border: 1px solid #0f0;
+      padding: 20px;
+      box-shadow: 0 0 10px #0f0;
+    }
+
+    .section {
+      margin-top: 20px;
+    }
+
+    .project {
+      margin-bottom: 20px;
+    }
+
+    .project h2 {
+      color: #0ff;
+    }
+
+    .project p {
+      margin: 5px 0;
+    }
+
+    .download-link {
+      color: #0ff;
+    }
+
+    img.icon {
+      width: 64px;
+      height: 64px;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+  </style>
 </head>
 <body>
-  <h1>
-    KEKKOTECH DOWNLOAD CENTER
-  </h1>
-  <h2>
-    Carte si è pappato il sito... torneremo online
-  </h2>
+  <div class="terminal">
+    <h1>Sezione Download</h1>
+
+    <div class="section">
+      <div class="project">
+        <img src="/path/to/project1-icon.png" alt="Project 1 Icon" class="icon">
+        <h2>Progetto 1</h2>
+        <p>Descrizione: Questo è un tool per fare X.</p>
+        <p>Versione: 1.0.0</p>
+        <p>Dimensione: 2.3 MB</p>
+        <p><a class="download-link" href="/downloads/progetto1.zip">Scarica Progetto 1</a></p>
+      </div>
+
+      <div class="project">
+        <img src="/path/to/project2-icon.png" alt="Project 2 Icon" class="icon">
+        <h2>Progetto 2</h2>
+        <p>Descrizione: Applicazione per fare Y.</p>
+        <p>Versione: 2.1.0</p>
+        <p>Dimensione: 5.7 MB</p>
+        <p><a class="download-link" href="/downloads/progetto2.zip">Scarica Progetto 2</a></p>
+      </div>
+    </div>
+
+    <div class="section">
+      <p>Digita <strong>home</strong> nel terminale principale per tornare alla home page.</p>
+    </div>
+  </div>
 </body>
+</html>
