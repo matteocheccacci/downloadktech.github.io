@@ -50,6 +50,9 @@
       font-size: 16px;
       white-space: pre-wrap;
     }
+    .section {
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
@@ -67,7 +70,8 @@
       Il tuo browser non supporta il tag video.
     </video>
     <div class="section">
-      <a href="#" class="btn" onclick="goHome()">Torna indietro</a>
+      <a href="https://kekkotech.com" class="btn" target="_blank">Vai a Kekkotech.com</a>
+      <a href="https://kekkotech.com/download-center" class="btn" target="_blank">Vai al Download Center</a>
     </div>
   </div>
 
@@ -83,11 +87,6 @@
     document.getElementById('project-icon').src = projectData.icon;
     document.getElementById('project-video').querySelector('source').src = projectData.video;
     document.getElementById('project-video').load();
-
-    // Funzione per tornare alla pagina precedente
-    function goHome() {
-      window.history.back(); // Torna alla pagina precedente
-    }
   </script>
 </body>
 </html>
