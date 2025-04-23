@@ -46,6 +46,22 @@
       vertical-align: middle;
       margin-right: 10px;
     }
+
+    .btn {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #000;
+      color: #0f0;
+      border: 1px solid #0f0;
+      border-radius: 4px;
+      text-decoration: none;
+      font-family: Consolas, monospace;
+    }
+
+    .btn:hover {
+      background: #003300;
+    }
   </style>
 </head>
 <body>
@@ -76,5 +92,11 @@
       <a href="#" class="btn" onclick="goHome()">Torna alla Home</a>
     </div>
   </div>
+
+  <script>
+    function goHome() {
+      window.location.href = "/";
+    }
+  </script>
 </body>
 </html>
