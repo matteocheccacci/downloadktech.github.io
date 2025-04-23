@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>404 - Pagina non trovata | Kekkotech</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 10px;
+      background-color: #000;
+      color: #0f0;
+      font-family: Consolas, monospace;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+
+    .terminal {
+      width: 100%;
+      max-width: 500px;
+      border: 1px solid #0f0;
+      padding: 20px;
+      box-shadow: 0 0 10px #0f0;
+      text-align: center;
+    }
+
+    .ascii-art {
+      font-size: 14px;
+      line-height: 1.2;
+      margin: 20px 0;
+      white-space: pre;
+      color: #0ff;
+    }
+
+    .btn {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #000;
+      color: #0f0;
+      border: 1px solid #0f0;
+      border-radius: 4px;
+      text-decoration: none;
+      font-family: Consolas, monospace;
+      font-size: 16px;
+    }
+
+    .btn:hover {
+      background: #003300;
+    }
+  </style>
+  <script>
+    function goToDownloads() {
+      window.location.href = '/downloads.html';
+    }
+  </script>
+</head>
+<body>
+  <div class="terminal">
+    <div>$ 404 - Pagina non trovata</div>
+    <div class="ascii-art">
+       ____
+      /    \
+     | o  o |
+     |  ∼   |   ← Ehi, sembri perso!
+      \_v_/
+      /   \__
+     |       \
+     |  _____/
+     \_/       
+    </div>
+    <div>Ops! La pagina che cerchi non esiste.</div>
+    <a href="#" class="btn" onclick="goToDownloads()">Torna al Download Center</a>
+  </div>
+</body>
+</html>
