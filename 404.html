@@ -21,7 +21,7 @@
 
     .terminal {
       width: 100%;
-      max-width: 500px;
+      max-width: 600px;
       border: 1px solid #0f0;
       padding: 20px;
       box-shadow: 0 0 10px #0f0;
@@ -29,11 +29,10 @@
     }
 
     .ascii-art {
-      font-size: 14px;
+      font-size: 12px;
       line-height: 1.2;
       margin: 20px 0;
       white-space: pre;
-      color: #0ff;
     }
 
     .btn {
@@ -55,7 +54,8 @@
   </style>
   <script>
     function goToDownloads() {
-      window.location.href = 'downloads.kekkotech.com';
+      window.open("https://downloads.kekkotech.com", "_blank");
+      window.close();
     }
   </script>
 </head>
@@ -63,17 +63,13 @@
   <div class="terminal">
     <div>$ 404 - Pagina non trovata</div>
     <div class="ascii-art">
-       ____
-      /    \
-     | o  o |
-     |  ∼   |   ← Ehi, sembri perso!
-      \_v_/
-      /   \__
-     |       \
-     |  _____/
-     \_/       
+{[¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯]}
+  ( x   x )       
+  |   ^   |  < non trovo nulla...    
+  |  ===  |
+ /_________\
     </div>
-    <div>Ops! La pagina che cerchi non esiste.</div>
+    <div>Oops! La pagina che cerchi non esiste.</div>
     <a href="#" class="btn" onclick="goToDownloads()">Torna al Download Center</a>
   </div>
 </body>
