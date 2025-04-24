@@ -1,9 +1,10 @@
 const projectData = {
-  title: "Progetto 1",
-  description: "Questo è un tool per fare X.",
-  version: "1.0.0",
-  size: "2.3 MB",
-  downloadLink: "/downloads/progetto1.zip",
+  title: "AutoDesigna",
+  description: "Progetto in lavorazione",
+  version: "-",
+  size: "-",
+  downloadLink: "404",
   icon: "icon.png",
-  video: "preview.mp4"
+  video: "preview.mp4",
+  authors: "Bollini Cristina, Matteo Checcacci"
 };
