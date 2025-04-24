@@ -12,37 +12,30 @@ function ask(question) {
 }
 
 async function showProjects() {
-    const listPath = path.join(__dirname, 'js', 'list.js');
-    let listData = fs.readFileSync(listPath, 'utf8');
-    const listMatch = listData.match(/\[\s*([\s\S]*?)\s*\]/);
+  const listPath = path.join(__dirname, 'js', 'list.js');
+  try {
+    const listData = fs.readFileSync(listPath, 'utf8');
+    const projectList = JSON.parse(listData.substring(listData.indexOf('['), listData.lastIndexOf(']') + 1));
 
-    if (!listMatch) {
-        console.log('❌ Errore nel formato di list.js');
-        return;
-    }
 
-    let entries = listMatch[1].trim().split(',\n').map(e => e.trim()).filter(e => e !== '');
-
-    if (entries.length === 0) {
-        console.log('Nessun progetto presente.');
-        return;
+    if (!Array.isArray(projectList) || projectList.length === 0) {
+      console.log('Nessun progetto presente o formato non valido.');
+      return;
     }
 
     console.log('Elenco Progetti:');
-    entries.forEach(entry => {
-        // Estrai il nome del progetto da ogni entry
-        const nameMatch = entry.match(/name: "([^"]+)"/);
-        const titleMatch = entry.match(/title: "([^"]+)"/);
-        const directoryNameMatch = entry.match(/directoryName: "([^"]+)"/);
-
-        if (nameMatch) {
-            const projectName = nameMatch[1];
-            const projectTitle = titleMatch ? titleMatch[1] : projectName;
-            const directoryName = directoryNameMatch ? directoryNameMatch[1] : projectName;
-            console.log(`- ${projectTitle} - ${directoryName}`);
-        }
+    projectList.forEach(project => {
+      const projectName = project.name;
+      const directoryName = project.directoryName || '';
+      const greenTitle = `\x1b[32m${projectName}\x1b[0m`;
+      const blueDirectory = directoryName ? `\x1b[34m${directoryName}\x1b[0m` : '';
+      console.log(`- ${greenTitle} - ${blueDirectory}`);
     });
+  } catch (error) {
+    console.error('Errore nella lettura o parsing di list.js:', error);
+  }
 }
+
 
 
 async function addProject() {
@@ -85,41 +78,43 @@ async function addProject() {
 
   // Aggiorna list.js
   const listPath = path.join(__dirname, 'js', 'list.js');
-  let listData = fs.readFileSync(listPath, 'utf8');
+  try {
+    let listData = fs.readFileSync(listPath, 'utf8');
+    let projectList = [];
+    // Extract the array part
+    const arrayContent = listData.substring(listData.indexOf('['), listData.lastIndexOf(']') + 1);
+    if(arrayContent){
+      try{
+        projectList = JSON.parse(arrayContent);
+      }catch(e){
+        projectList = [];
+      }
+    }
 
-  const newEntry = `  {
-    name: "${title}",
-    directoryName: "${name}",
-    icon: "${icon}",
-    zip: "${downloadLink}",
-    info: "https://downloads.kekkotech.com/projects/${name}/${name}.html"
-  }`;
+    const newEntry = {
+      name: title,
+      directoryName: name,
+      icon: icon,
+      zip: downloadLink,
+      info: `https://downloads.kekkotech.com/projects/${name}/${name}.html`
+    };
 
-  // Trova il contenuto della lista di progetti
-  const listMatch = listData.match(/\[\s*([\s\S]*?)\s*\]/);
+    // Check for duplicates
+    const duplicate = projectList.find(p => p.directoryName === name);
+    if (!duplicate) {
+      projectList.push(newEntry);
+    }
 
-  if (!listMatch) {
-    console.log('❌ Errore nel formato di list.js');
-    return;
+    const updatedList = `const projectList = ${JSON.stringify(projectList, null, 2)};`; //pretty print
+    fs.writeFileSync(listPath, updatedList);
+
+    console.log(`✅ Progetto "${title}" aggiunto.`);
+  } catch (error) {
+    console.error('Errore nell\'aggiornamento di list.js:', error);
   }
-
-  let entries = listMatch[1].trim().split(',\n').map(e => e.trim()).filter(e => e !== '');
-  // Rimuovi voci duplicati
-  entries = entries.filter(entry => !entry.includes(`directoryName: "${name}"`));
-  if (entries.length > 0) {
-    entries.push(newEntry);
-  } else {
-    entries = [newEntry];
-  }
-
-
-  // Scrivi la lista aggiornata nel formato corretto
-  const updatedList = `const projectList = [\n${entries.join(',\n')}\n];`;
-
-  fs.writeFileSync(listPath, updatedList);
-
-  console.log(`✅ Progetto "${title}" aggiunto.`);
 }
+
+
 
 async function modifyProject() {
   const name = await ask('Nome progetto da modificare (es. mio_sito_web): ');
@@ -141,7 +136,7 @@ async function modifyProject() {
   const downloadLink = await ask('Nuovo link (es. https://example.com/download): ');
   const icon = await ask('Nuovo percorso icona (es. /img/progetti/msw_icon.png): ');
   const video = await ask('Nuovo file video (es. anteprima.mp4): ');
-    const authors = await ask('Nuovi autori (es. Mario Rossi, Luigi Verdi): ');
+  const authors = await ask('Nuovi autori (es. Mario Rossi, Luigi Verdi): ');
 
   // Contenuto JS aggiornato
   const jsContent = `const projectData = {
@@ -164,36 +159,45 @@ async function modifyProject() {
 
   // Aggiorna list.js
   const listPath = path.join(__dirname, 'js', 'list.js');
-  let listData = fs.readFileSync(listPath, 'utf8');
+  try {
+    let listData = fs.readFileSync(listPath, 'utf8');
+      let projectList = [];
+    // Extract the array part
+    const arrayContent = listData.substring(listData.indexOf('['), listData.lastIndexOf(']') + 1);
+    if(arrayContent){
+      try{
+         projectList = JSON.parse(arrayContent);
+      }catch(e){
+        projectList = [];
+      }
+    }
 
-  const listMatch = listData.match(/\[\s*([\s\S]*?)\s*\]/);
 
-  if (!listMatch) {
-    console.log('❌ Errore nel formato di list.js');
-    return;
+    const updatedEntry = {
+      name: title,
+      directoryName: name,
+      icon: icon,
+      zip: downloadLink,
+      info: `https://downloads.kekkotech.com/projects/${name}/${name}.html`
+    };
+
+    // Find and update
+    const index = projectList.findIndex(p => p.directoryName === name);
+    if (index !== -1) {
+      projectList[index] = updatedEntry;
+    } else {
+      projectList.push(updatedEntry); // Add if not found
+    }
+
+    const updatedList = `const projectList = ${JSON.stringify(projectList, null, 2)};`;
+    fs.writeFileSync(listPath, updatedList);
+
+    console.log(`✅ Progetto "${title}" modificato.`);
+  } catch (error) {
+    console.error('Errore nella modifica di list.js:', error);
   }
-
-  let entries = listMatch[1].trim().split(',\n').map(e => e.trim()).filter(e => e !== '');
-  entries = entries.filter(entry => !entry.includes(`directoryName: "${name}"`));
-  const newEntry = `  {
-    name: "${title}",
-    directoryName: "${name}",
-    icon: "${icon}",
-    zip: "${downloadLink}",
-    info: "https://downloads.kekkotech.com/projects/${name}/${name}.html"
-  }`;
-  if (entries.length > 0) {
-    entries.push(newEntry);
-  } else {
-    entries = [newEntry];
-  }
-
-  const updatedList = `const projectList = [\n${entries.join(',\n')}\n];`;
-
-  fs.writeFileSync(listPath, updatedList);
-
-  console.log(`✅ Progetto "${title}" modificato.`);
 }
+
 
 async function removeProject() {
   const name = await ask('Nome progetto da rimuovere (es. mio_sito_web): ');
@@ -211,29 +215,34 @@ async function removeProject() {
   // Rimuovi il progetto
   fs.rmSync(projectDir, { recursive: true, force: true });
 
-  // Rimuovi anche il progetto dalla lista
+  // Aggiorna list.js
   const listPath = path.join(__dirname, 'js', 'list.js');
-  let listData = fs.readFileSync(listPath, 'utf8');
+  try {
+    let listData = fs.readFileSync(listPath, 'utf8');
+    let projectList = [];
+    // Extract the array part
+    const arrayContent = listData.substring(listData.indexOf('['), listData.lastIndexOf(']') + 1);
+      if(arrayContent){
+      try{
+         projectList = JSON.parse(arrayContent);
+      }catch(e){
+        projectList = [];
+      }
+    }
 
-  const listMatch = listData.match(/\[\s*([\s\S]*?)\s*\]/);
+    // Remove the project
+    const updatedList = projectList.filter(p => p.directoryName !== name);
+    const updatedListContent = `const projectList = ${JSON.stringify(updatedList, null, 2)};`;
+    fs.writeFileSync(listPath, updatedListContent);
 
-  if (!listMatch) {
-    console.log('❌ Errore nel formato di list.js');
-    return;
+    console.log(`✅ Progetto "${name}" rimosso.`);
+  } catch (error) {
+    console.error('Errore nella rimozione del progetto da list.js:', error);
   }
-
-  let entries = listMatch[1].trim().split(',\n').map(e => e.trim()).filter(e => e !== '');
-  entries = entries.filter(entry => !entry.includes(`directoryName: "${name}"`)); // Usa directoryName
-
-  const updatedList = `const projectList = [\n${entries.join(',\n')}\n];`;
-
-  fs.writeFileSync(listPath, updatedList);
-
-  console.log(`✅ Progetto "${name}" rimosso.`);
 }
 
 async function run() {
-    await showProjects();
+  await showProjects();
   const action = await ask('Cosa vuoi fare? (add, modify, remove): ');
 
   if (action === 'add') {
