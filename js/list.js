@@ -1,4 +1,3 @@
-// ./js/list.js
 const projectList = [
   {
     name: "Progetto1",
