@@ -94,32 +94,8 @@
     <h1 id="typed-title" class="typed"></h1>
 
     <div id="main-content" style="display: none;">
-      <div class="section">
-
-        <!-- Progetto 1 -->
-        <div class="project">
-          <div class="info">
-            <img src="/img/progetti/project1-icon.png" alt="Project1 Icon" class="icon">
-            <h2>Progetto1</h2>
-          </div>
-          <div class="buttons">
-            <a class="btn" href="/projects/progetto1/progetto1.zip">Download</a>
-            <a class="btn" href="/projects/progetto1/progetto1.html">Info</a>
-          </div>
-        </div>
-
-        <!-- Progetto 2 -->
-        <div class="project">
-          <div class="info">
-            <img src="/img/progetti/project2-icon.png" alt="Project2 Icon" class="icon">
-            <h2>Progetto2</h2>
-          </div>
-          <div class="buttons">
-            <a class="btn" href="projects/progetto2/progetto2.zip">Download</a>
-            <a class="btn" href="/projects/progetto2/progetto2.html">Info</a>
-          </div>
-        </div>
-
+      <div class="section" id="project-list">
+        <!-- Progetti generati dinamicamente -->
       </div>
 
       <div class="section">
@@ -128,6 +104,8 @@
     </div>
   </div>
 
+  <!-- Script per animazione e caricamento -->
+  <script src="./js/list.js"></script>
   <script>
     function goHome() {
       window.open("https://kekkotech.com", "_self");
@@ -150,8 +128,32 @@
       typeChar();
     }
 
-    // Scrittura effetto digitazione
+    function createProjectHTML(project) {
+      return `
+        <div class="project">
+          <div class="info">
+            <img src="${project.icon}" alt="${project.name} Icon" class="icon">
+            <h2>${project.name}</h2>
+          </div>
+          <div class="buttons">
+            <a class="btn" href="${project.zip}">Download</a>
+            <a class="btn" href="${project.info}">Info</a>
+          </div>
+        </div>
+      `;
+    }
+
+    function populateProjects() {
+      const container = document.getElementById('project-list');
+      if (typeof projectList === 'undefined') {
+        container.innerHTML = "<p>Errore: lista progetti non trovata.</p>";
+        return;
+      }
+      container.innerHTML = projectList.map(createProjectHTML).join('');
+    }
+
     typeLine("Download Center kekkotech.com", "typed-title", () => {
+      populateProjects();
       document.getElementById('main-content').style.display = "block";
     });
   </script>
