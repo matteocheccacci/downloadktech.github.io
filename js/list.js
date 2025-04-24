@@ -1,9 +1,9 @@
 const projectList = [
   {
-    name: "Progetto1",
+    name: "AutoDesigna",
     icon: "/img/progetti/project1-icon.png",
     zip: "404",
-    info: "/projects/progetto1/progetto1.html"
+    info: "/projects/autodesigna/autodesigna.html"
   },
   {
     name: "Progetto2",
