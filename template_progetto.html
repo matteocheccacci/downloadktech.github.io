@@ -61,7 +61,7 @@
       <img id="project-icon" src="icon.png" alt="Icona Progetto">
       <h1 id="project-name">Nome Progetto</h1>
     </div>
-    <p><strong>Autori:</strong> <span id = "project-authors">Autori</span></p>
+    <p><strong>Autori:</strong> <span id="project-authors">Autori</span></p>
     <p><strong>Versione:</strong> <span id="project-version">1.0.0</span></p>
     <p><strong>Dimensione:</strong> <span id="project-size">2.3 MB</span></p>
     <div class="description" id="project-description">Descrizione del progetto.</div>
@@ -76,26 +76,23 @@
     </div>
   </div>
 
-<<<<<<< HEAD
-  <!-- Qui il file JS contenente i dati del progetto -->
-  <script src="projectData.js"></script>
   <script>
-    // Popola i dati del progetto dinamicamente utilizzando projectData.js
-=======
-  <script src="autodesigna.js"></script>
-  <script>
-    // Popola i dati del progetto
->>>>>>> db3ca63a9777d34c72640464b42aff71c0840b76
-    document.getElementById('project-authors').textContent = projectData.authors;
-    document.getElementById('project-title').textContent = projectData.title;
-    document.getElementById('project-name').textContent = projectData.title;
-    document.getElementById('project-version').textContent = projectData.version;
-    document.getElementById('project-size').textContent = projectData.size;
-    document.getElementById('project-description').textContent = projectData.description; // Assicurati che questa variabile esista nel tuo progetto
-    document.getElementById('download-link').href = projectData.downloadLink;
-    document.getElementById('project-icon').src = projectData.icon;
-    document.getElementById('project-video').querySelector('source').src = projectData.video;
-    document.getElementById('project-video').load();
+    // Verifica se projectData è definito prima di utilizzarlo.
+    if (typeof projectData !== 'undefined') {
+      document.getElementById('project-authors').textContent = projectData.authors;
+      document.getElementById('project-title').textContent = projectData.title;
+      document.getElementById('project-name').textContent = projectData.title;
+      document.getElementById('project-version').textContent = projectData.version;
+      document.getElementById('project-size').textContent = projectData.size;
+      document.getElementById('project-description').textContent = projectData.description;
+      document.getElementById('download-link').href = projectData.downloadLink;
+      document.getElementById('project-icon').src = projectData.icon;
+      document.getElementById('project-video').querySelector('source').src = projectData.video;
+      document.getElementById('project-video').load();
+    } else {
+      console.error('projectData is not defined.  Check the script loading order.');
+    }
   </script>
+  <script src="nomeprogetto.js"></script>
 </body>
 </html>
