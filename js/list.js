@@ -1,6 +1,6 @@
 const projectList = [
   {
-    name: "AutoDesigna",
+    name: "Asdrubale",
     icon: "/img/progetti/project1-icon.png",
     zip: "404",
     info: "https://downloads.kekkotech.com/projects/autodesigna/autodesigna.html"
