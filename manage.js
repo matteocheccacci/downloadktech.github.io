@@ -11,31 +11,133 @@ function ask(question) {
   return new Promise(resolve => rl.question(question, resolve));
 }
 
+
+
 async function showProjects() {
-  const listPath = path.join(__dirname, 'js', 'list.js');
-  try {
-    const listData = fs.readFileSync(listPath, 'utf8');
-    const projectList = JSON.parse(listData.substring(listData.indexOf('['), listData.lastIndexOf(']') + 1));
+    const listPath = path.join(__dirname, 'js', 'list.js');
+    try {
+        const listData = fs.readFileSync(listPath, 'utf8');
+        const projectList = JSON.parse(listData.substring(listData.indexOf('['), listData.lastIndexOf(']') + 1));
+
+        if (!Array.isArray(projectList) || projectList.length === 0) {
+            console.log('Nessun progetto presente o formato non valido.');
+            return;
+        }
+
+        console.log('Elenco Progetti:');
+        for (const project of projectList) {
+            const projectName = project.name;
+            const directoryName = project.directoryName || '';
+            const greenTitle = `\x1b[32m${projectName}\x1b[0m`;
+            const blueDirectory = directoryName ? `\x1b[34m${directoryName}\x1b[0m` : '';
+            console.log(`- ${greenTitle} - ${blueDirectory}`);
+
+            // Genera la pagina HTML per il progetto
+            await generateProjectHTML(project);
+        }
 
 
-    if (!Array.isArray(projectList) || projectList.length === 0) {
-      console.log('Nessun progetto presente o formato non valido.');
-      return;
+    } catch (error) {
+        console.error('Errore nella lettura o parsing di list.js:', error);
     }
-
-    console.log('Elenco Progetti:');
-    projectList.forEach(project => {
-      const projectName = project.name;
-      const directoryName = project.directoryName || '';
-      const greenTitle = `\x1b[32m${projectName}\x1b[0m`;
-      const blueDirectory = directoryName ? `\x1b[34m${directoryName}\x1b[0m` : '';
-      console.log(`- ${greenTitle} - ${blueDirectory}`);
-    });
-  } catch (error) {
-    console.error('Errore nella lettura o parsing di list.js:', error);
-  }
 }
 
+async function generateProjectHTML(projectData) {
+    const projectDir = path.join(__dirname, 'projects', projectData.directoryName);
+    const htmlPath = path.join(projectDir, `${projectData.directoryName}.html`);
+
+    if (!fs.existsSync(projectDir)) {
+        fs.mkdirSync(projectDir, { recursive: true });
+    }
+
+    // Costruisci la stringa HTML con i dati del progetto
+    const htmlContent = `<!DOCTYPE html>
+    <html lang="it">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title id="project-title">${projectData.title}</title>
+        <style>
+          body {
+            background-color: #000;
+            color: #0f0;
+            font-family: Consolas, monospace;
+            padding: 20px;
+          }
+          .terminal {
+            max-width: 800px;
+            margin: auto;
+            border: 1px solid #0f0;
+            padding: 20px;
+            box-shadow: 0 0 10px #0f0;
+          }
+          .project-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+          }
+          .project-header img {
+            width: 64px;
+            height: 64px;
+          }
+          .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #000;
+            color: #0f0;
+            border: 1px solid #0f0;
+            border-radius: 4px;
+            text-decoration: none;
+            font-family: Consolas, monospace;
+          }
+          .btn:hover {
+            background: #003300;
+          }
+          video {
+            width: 100%;
+            margin-top: 20px;
+          }
+          .description {
+            margin-top: 20px;
+            font-size: 16px;
+            white-space: pre-wrap;
+          }
+          .section {
+            margin-top: 20px;
+          }
+        </style>
+    </head>
+    <body>
+        <div class="terminal">
+            <div class="project-header">
+                <img id="project-icon" src="${projectData.icon}" alt="Icona Progetto">
+                <h1 id="project-name">${projectData.name}</h1>
+            </div>
+            <p><strong>Autori:</strong> <span id="project-authors">${projectData.authors}</span></p>
+            <p><strong>Versione:</strong> <span id="project-version">${projectData.version}</span></p>
+            <p><strong>Dimensione:</strong> <span id="project-size">${projectData.size}</span></p>
+            <div class="description" id="project-description">${projectData.description}</div>
+            <a id="download-link" class="btn" href="${projectData.zip}">Scarica</a>
+            ${projectData.video ? `<video id="project-video" controls>
+                <source src="${projectData.video}" type="video/mp4">
+                Il tuo browser non supporta il tag video.
+            </video>` : ''}
+            <div class="section">
+                <a href="https://kekkotech.com" class="btn" target="_blank">Vai a kekkotech.com</a>
+                <a href="https://downloads.kekkotech.com" class="btn" target="_blank">Vai al Download Center</a>
+            </div>
+        </div>
+        <script>
+           //No script needed here, the data is already in the HTML
+        </script>
+    </body>
+    </html>
+    `;
+
+    fs.writeFileSync(htmlPath, htmlContent);
+    console.log(`✅ Pagina HTML del progetto generata in: ${htmlPath}`);
+}
 
 
 async function addProject() {
@@ -53,28 +155,25 @@ async function addProject() {
   const htmlPath = path.join(projectDir, `${name}.html`);
   const jsPath = path.join(projectDir, `${name}.js`);
 
+
+
   if (!fs.existsSync(projectDir)) {
     fs.mkdirSync(projectDir, { recursive: true });
   }
 
-  // Contenuto JS
+  // Contenuto JS - Non più necessario, inseriamo direttamente nell'HTML
   const jsContent = `const projectData = {
     title: "${title}",
     description: "${description}",
     version: "${version}",
     size: "${size}",
     downloadLink: "${downloadLink}",
-    icon: "icon.png",
+    icon: "${icon}",
     video: "${video}",
     authors: "${authors}"
   };`;
-
   fs.writeFileSync(jsPath, jsContent);
 
-  // Contenuto HTML
-  const htmlTemplate = fs.readFileSync(path.join(__dirname, 'template_progetto.html'), 'utf8');
-  const htmlWithScript = htmlTemplate.replace('SCRIPT_SRC_HERE', `${name}.js`);
-  fs.writeFileSync(htmlPath, htmlWithScript);
 
   // Aggiorna list.js
   const listPath = path.join(__dirname, 'js', 'list.js');
@@ -83,10 +182,10 @@ async function addProject() {
     let projectList = [];
     // Extract the array part
     const arrayContent = listData.substring(listData.indexOf('['), listData.lastIndexOf(']') + 1);
-    if(arrayContent){
-      try{
+    if (arrayContent) {
+      try {
         projectList = JSON.parse(arrayContent);
-      }catch(e){
+      } catch (e) {
         projectList = [];
       }
     }
@@ -96,7 +195,12 @@ async function addProject() {
       directoryName: name,
       icon: icon,
       zip: downloadLink,
-      info: `https://downloads.kekkotech.com/projects/${name}/${name}.html`
+      info: `https://downloads.kekkotech.com/projects/${name}/${name}.html`,
+      authors: authors,
+      version: version,
+      size: size,
+      description: description,
+      video: video
     };
 
     // Check for duplicates
@@ -112,6 +216,22 @@ async function addProject() {
   } catch (error) {
     console.error('Errore nell\'aggiornamento di list.js:', error);
   }
+  //genera html
+  await generateProjectHTML(
+    {
+      name: title,
+      directoryName: name,
+      icon: icon,
+      zip: downloadLink,
+      info: `https://downloads.kekkotech.com/projects/${name}/${name}.html`,
+      authors: authors,
+      version: version,
+      size: size,
+      description: description,
+      video: video
+    }
+  );
+
 }
 
 
@@ -122,6 +242,8 @@ async function modifyProject() {
   const projectDir = path.join(__dirname, 'projects', name);
   const jsPath = path.join(projectDir, `${name}.js`);
   const htmlPath = path.join(projectDir, `${name}.html`);
+
+
 
   if (!fs.existsSync(projectDir)) {
     console.log('❌ Progetto non esiste.');
@@ -135,10 +257,10 @@ async function modifyProject() {
   const size = await ask('Nuova dimensione (es. 5.7 MB): ');
   const downloadLink = await ask('Nuovo link (es. https://example.com/download): ');
   const icon = await ask('Nuovo percorso icona (es. /img/progetti/msw_icon.png): ');
-  const video = await ask('Nuovo file video (es. anteprima.mp4): ');
+  const video = await ask('Nome file video (es. anteprima.mp4): ');
   const authors = await ask('Nuovi autori (es. Mario Rossi, Luigi Verdi): ');
 
-  // Contenuto JS aggiornato
+  // Contenuto JS - non piu usato
   const jsContent = `const projectData = {
     title: "${title}",
     description: "${description}",
@@ -149,36 +271,35 @@ async function modifyProject() {
     video: "${video}",
     authors: "${authors}"
   };`;
-
   fs.writeFileSync(jsPath, jsContent);
 
-  // Contenuto HTML aggiornato
-  const htmlTemplate = fs.readFileSync(path.join(__dirname, 'template_progetto.html'), 'utf8');
-  const htmlWithScript = htmlTemplate.replace('SCRIPT_SRC_HERE', `${name}.js`);
-  fs.writeFileSync(htmlPath, htmlWithScript);
 
   // Aggiorna list.js
   const listPath = path.join(__dirname, 'js', 'list.js');
   try {
     let listData = fs.readFileSync(listPath, 'utf8');
-      let projectList = [];
+    let projectList = [];
     // Extract the array part
     const arrayContent = listData.substring(listData.indexOf('['), listData.lastIndexOf(']') + 1);
-    if(arrayContent){
-      try{
-         projectList = JSON.parse(arrayContent);
-      }catch(e){
+    if (arrayContent) {
+      try {
+        projectList = JSON.parse(arrayContent);
+      } catch (e) {
         projectList = [];
       }
     }
-
 
     const updatedEntry = {
       name: title,
       directoryName: name,
       icon: icon,
       zip: downloadLink,
-      info: `https://downloads.kekkotech.com/projects/${name}/${name}.html`
+      info: `https://downloads.kekkotech.com/projects/${name}/${name}.html`,
+      authors: authors,
+      version: version,
+      size: size,
+      description: description,
+      video: video
     };
 
     // Find and update
@@ -196,6 +317,21 @@ async function modifyProject() {
   } catch (error) {
     console.error('Errore nella modifica di list.js:', error);
   }
+  //genera la pagina html
+  await generateProjectHTML(
+     {
+      name: title,
+      directoryName: name,
+      icon: icon,
+      zip: downloadLink,
+      info: `https://downloads.kekkotech.com/projects/${name}/${name}.html`,
+      authors: authors,
+      version: version,
+      size: size,
+      description: description,
+      video: video
+    }
+  );
 }
 
 
@@ -205,6 +341,7 @@ async function removeProject() {
   const projectDir = path.join(__dirname, 'projects', name);
   const jsPath = path.join(projectDir, `${name}.js`);
   const htmlPath = path.join(projectDir, `${name}.html`);
+
 
   if (!fs.existsSync(projectDir)) {
     console.log('❌ Progetto non esiste.');
@@ -222,10 +359,10 @@ async function removeProject() {
     let projectList = [];
     // Extract the array part
     const arrayContent = listData.substring(listData.indexOf('['), listData.lastIndexOf(']') + 1);
-      if(arrayContent){
-      try{
-         projectList = JSON.parse(arrayContent);
-      }catch(e){
+    if (arrayContent) {
+      try {
+        projectList = JSON.parse(arrayContent);
+      } catch (e) {
         projectList = [];
       }
     }
