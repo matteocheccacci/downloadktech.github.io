@@ -65,15 +65,21 @@ async function addProject() {
     info: "https://downloads.kekkotech.com/projects/${name}/${name}.html"
   }`;
 
-  const entries = listData.match(/(\[\s*|\s*\])|\s*{.*?}/g);  // Trova tutte le voci nell'array
-  const existingEntries = entries ? entries.map(entry => entry.trim()).filter(entry => entry) : [];
-  
-  // Filtra eventuali voci duplicati
-  const updatedEntries = existingEntries.filter(entry => !entry.includes(`"${title}"`));
-  updatedEntries.push(newEntry);
+  // Trova il contenuto della lista di progetti
+  const listMatch = listData.match(/\[\s*([\s\S]*?)\s*\]/);
 
-  // Crea la nuova lista
-  const updatedList = listData.replace(/\[\s*.*?\s*\]/, `[ ${updatedEntries.join(',\n')} ]`);
+  if (!listMatch) {
+    console.log('❌ Errore nel formato di list.js');
+    return;
+  }
+
+  let entries = listMatch[1].trim().split('\n').map(e => e.trim()).filter(e => e !== '');
+  // Rimuovi voci duplicati
+  entries = entries.filter(entry => !entry.includes(`"${title}"`));
+  entries.push(newEntry);
+
+  // Scrivi la lista aggiornata nel formato corretto
+  const updatedList = `const projectList = [\n${entries.join(',\n')}\n];`;
 
   fs.writeFileSync(listPath, updatedList);
 
@@ -125,17 +131,24 @@ async function modifyProject() {
   const listPath = path.join(__dirname, 'js', 'list.js');
   const listData = fs.readFileSync(listPath, 'utf8');
 
-  const updatedList = listData.replace(/(\[\s*)((.|\s)*?)(\s*\])/, (match, p1, p2, _, p4) => {
-    const entries = p2.trim().split('\n').filter(e => e.trim());
-    const updated = entries.filter(line => !line.includes(`"${name}"`));
-    updated.push(`  {
-      name: "${title}",
-      icon: "${icon}",
-      zip: "${downloadLink}",
-      info: "https://downloads.kekkotech.com/projects/${name}/${name}.html"
-    }`);
-    return `${p1}${updated.join(',\n')}${p4}`;
-  });
+  const listMatch = listData.match(/\[\s*([\s\S]*?)\s*\]/);
+
+  if (!listMatch) {
+    console.log('❌ Errore nel formato di list.js');
+    return;
+  }
+
+  let entries = listMatch[1].trim().split('\n').map(e => e.trim()).filter(e => e !== '');
+  entries = entries.filter(entry => !entry.includes(`"${name}"`));
+
+  entries.push(`  {
+    name: "${title}",
+    icon: "${icon}",
+    zip: "${downloadLink}",
+    info: "https://downloads.kekkotech.com/projects/${name}/${name}.html"
+  }`);
+
+  const updatedList = `const projectList = [\n${entries.join(',\n')}\n];`;
 
   fs.writeFileSync(listPath, updatedList);
 
@@ -162,11 +175,17 @@ async function removeProject() {
   const listPath = path.join(__dirname, 'js', 'list.js');
   const listData = fs.readFileSync(listPath, 'utf8');
 
-  const updatedList = listData.replace(/(\[\s*)((.|\s)*?)(\s*\])/, (match, p1, p2, _, p4) => {
-    const entries = p2.trim().split('\n').filter(e => e.trim());
-    const updated = entries.filter(line => !line.includes(`"${name}"`));
-    return `${p1}${updated.join(',\n')}${p4}`;
-  });
+  const listMatch = listData.match(/\[\s*([\s\S]*?)\s*\]/);
+
+  if (!listMatch) {
+    console.log('❌ Errore nel formato di list.js');
+    return;
+  }
+
+  let entries = listMatch[1].trim().split('\n').map(e => e.trim()).filter(e => e !== '');
+  entries = entries.filter(line => !line.includes(`"${name}"`));
+
+  const updatedList = `const projectList = [\n${entries.join(',\n')}\n];`;
 
   fs.writeFileSync(listPath, updatedList);
 
