@@ -31,9 +31,6 @@ async function showProjects() {
             const greenTitle = `\x1b[32m${projectName}\x1b[0m`;
             const blueDirectory = directoryName ? `\x1b[34m${directoryName}\x1b[0m` : '';
             console.log(`- ${greenTitle} - ${blueDirectory}`);
-
-            // Genera la pagina HTML per il progetto
-            await generateProjectHTML(project);
         }
 
 
@@ -56,7 +53,7 @@ async function generateProjectHTML(projectData) {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title id="project-title">${projectData.title}</title>
+        <title id="project-title">${projectData.name} | kekkotech</title>
         <style>
           body {
             background-color: #000;
