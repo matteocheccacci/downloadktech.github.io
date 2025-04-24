@@ -192,7 +192,7 @@ async function removeProject() {
   }
 
   let entries = listMatch[1].trim().split(',\n').map(e => e.trim()).filter(e => e !== '');
-  entries = entries.filter(entry => !entry.includes(`name: "${name}"`));
+  entries = entries.filter(entry => !entry.includes(`name: "${name}"`)); // Corretto
 
   const updatedList = `const projectList = [\n${entries.join(',\n')}\n];`;
 

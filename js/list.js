@@ -5,10 +5,4 @@ icon: "404",
 zip: "404",
 info: "https://downloads.kekkotech.com/projects/addtest/addtest.html"
     },
-  {
-    name: "Test",
-    icon: "-",
-    zip: "-",
-    info: "https://downloads.kekkotech.com/projects/test/test.html"
-  }
 ];
