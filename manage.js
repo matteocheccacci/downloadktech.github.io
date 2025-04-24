@@ -37,15 +37,15 @@ async function addProject() {
 
   // Contenuto JS
   const jsContent = `const projectData = {
-  title: "${title}",
-  description: "${description}",
-  version: "${version}",
-  size: "${size}",
-  downloadLink: "${downloadLink}",
-  icon: "icon.png",
-  video: "${video}",
-  authors: "${authors}"
-};`;
+    title: "${title}",
+    description: "${description}",
+    version: "${version}",
+    size: "${size}",
+    downloadLink: "${downloadLink}",
+    icon: "icon.png",
+    video: "${video}",
+    authors: "${authors}"
+  };`;
 
   fs.writeFileSync(jsPath, jsContent);
 
@@ -56,7 +56,7 @@ async function addProject() {
 
   // Aggiorna list.js
   const listPath = path.join(__dirname, 'js', 'list.js');
-  const listData = fs.readFileSync(listPath, 'utf8');
+  let listData = fs.readFileSync(listPath, 'utf8');
 
   const newEntry = `  {
     name: "${title}",
@@ -73,10 +73,15 @@ async function addProject() {
     return;
   }
 
-  let entries = listMatch[1].trim().split('\n').map(e => e.trim()).filter(e => e !== '');
+  let entries = listMatch[1].trim().split(',\n').map(e => e.trim()).filter(e => e !== '');
   // Rimuovi voci duplicati
-  entries = entries.filter(entry => !entry.includes(`"${title}"`));
-  entries.push(newEntry);
+  entries = entries.filter(entry => !entry.includes(`name: "${title}"`));
+  if (entries.length > 0) {
+    entries.push(newEntry);
+  } else {
+    entries = [newEntry];
+  }
+
 
   // Scrivi la lista aggiornata nel formato corretto
   const updatedList = `const projectList = [\n${entries.join(',\n')}\n];`;
@@ -110,15 +115,15 @@ async function modifyProject() {
 
   // Contenuto JS aggiornato
   const jsContent = `const projectData = {
-  title: "${title}",
-  description: "${description}",
-  version: "${version}",
-  size: "${size}",
-  downloadLink: "${downloadLink}",
-  icon: "icon.png",
-  video: "${video}",
-  authors: "${authors}"
-};`;
+    title: "${title}",
+    description: "${description}",
+    version: "${version}",
+    size: "${size}",
+    downloadLink: "${downloadLink}",
+    icon: "icon.png",
+    video: "${video}",
+    authors: "${authors}"
+  };`;
 
   fs.writeFileSync(jsPath, jsContent);
 
@@ -129,7 +134,7 @@ async function modifyProject() {
 
   // Aggiorna list.js
   const listPath = path.join(__dirname, 'js', 'list.js');
-  const listData = fs.readFileSync(listPath, 'utf8');
+  let listData = fs.readFileSync(listPath, 'utf8');
 
   const listMatch = listData.match(/\[\s*([\s\S]*?)\s*\]/);
 
@@ -138,15 +143,19 @@ async function modifyProject() {
     return;
   }
 
-  let entries = listMatch[1].trim().split('\n').map(e => e.trim()).filter(e => e !== '');
-  entries = entries.filter(entry => !entry.includes(`"${name}"`));
-
-  entries.push(`  {
+  let entries = listMatch[1].trim().split(',\n').map(e => e.trim()).filter(e => e !== '');
+  entries = entries.filter(entry => !entry.includes(`name: "${name}"`));
+  const newEntry = `  {
     name: "${title}",
     icon: "${icon}",
     zip: "${downloadLink}",
     info: "https://downloads.kekkotech.com/projects/${name}/${name}.html"
-  }`);
+  }`;
+  if (entries.length > 0) {
+    entries.push(newEntry);
+  } else {
+    entries = [newEntry];
+  }
 
   const updatedList = `const projectList = [\n${entries.join(',\n')}\n];`;
 
@@ -173,7 +182,7 @@ async function removeProject() {
 
   // Rimuovi anche il progetto dalla lista
   const listPath = path.join(__dirname, 'js', 'list.js');
-  const listData = fs.readFileSync(listPath, 'utf8');
+  let listData = fs.readFileSync(listPath, 'utf8');
 
   const listMatch = listData.match(/\[\s*([\s\S]*?)\s*\]/);
 
@@ -182,8 +191,8 @@ async function removeProject() {
     return;
   }
 
-  let entries = listMatch[1].trim().split('\n').map(e => e.trim()).filter(e => e !== '');
-  entries = entries.filter(line => !line.includes(`"${name}"`));
+  let entries = listMatch[1].trim().split(',\n').map(e => e.trim()).filter(e => e !== '');
+  entries = entries.filter(entry => !entry.includes(`name: "${name}"`));
 
   const updatedList = `const projectList = [\n${entries.join(',\n')}\n];`;
 
