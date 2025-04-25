@@ -43,6 +43,7 @@ async function generateProjectHTML(projectData) {
     const projectDir = path.join(__dirname, 'projects', projectData.directoryName);
     const htmlPath = path.join(projectDir, `${projectData.directoryName}.html`);
     const videoPath = projectData.video ? path.join(projectDir, projectData.video) : ''; // Costruisci il percorso del video
+    const iconPath = projectData.icon ? path.join(projectDir, projectData.icon) : ''; // Costruisci il percorso dell'icona
 
     if (!fs.existsSync(projectDir)) {
         fs.mkdirSync(projectDir, { recursive: true });
@@ -109,7 +110,7 @@ async function generateProjectHTML(projectData) {
     <body>
         <div class="terminal">
             <div class="project-header">
-                <img id="project-icon" src="${projectData.icon}" alt="Icona Progetto">
+                <img id="project-icon" src="${iconPath}" alt="Icona Progetto">
                 <h1 id="project-name">${projectData.name}</h1>
             </div>
             <p><strong>Autori:</strong> <span id="project-authors">${projectData.authors}</span></p>
@@ -145,8 +146,8 @@ async function addProject() {
     const version = await ask('Versione (es. 1.2.3): ');
     const size = await ask('Dimensione (es. 5.7 MB): ');
     const downloadLink = await ask('Link download: ');
-    const icon = await ask('Percorso icona (es. /img/progetti/msw_icon.png): ');
-    const video = await ask('Nome file video (es. anteprima.mp4): '); // Chiedi solo il nome del file
+    const icon = await ask('Nome file icona (es. icon.png): '); // Chiedi solo il nome del file icona
+    const video = await ask('Nome file video (es. anteprima.mp4): '); // Chiedi solo il nome del file video
     const authors = await ask('Autori (es. Mario Rossi, Luigi Verdi): ');
 
     const projectDir = path.join(__dirname, 'projects', name);
@@ -191,14 +192,14 @@ async function addProject() {
         const newEntry = {
             name: title,
             directoryName: name,
-            icon: icon,
+            icon: icon, // Salva solo il nome del file icona
             zip: downloadLink,
             info: `https://downloads.kekkotech.com/projects/${name}/${name}.html`,
             authors: authors,
             version: version,
             size: size,
             description: description,
-            video: video // Salva solo il nome del file
+            video: video // Salva solo il nome del file video
         };
 
         // Check for duplicates
@@ -253,9 +254,9 @@ async function modifyProject() {
     const description = await ask('Nuova descrizione (es. Un sito web interattivo...): ');
     const version = await ask('Nuova versione (es. 1.2.3): ');
     const size = await ask('Nuova dimensione (es. 5.7 MB): ');
-    const downloadLink = await ask('Nuovo link (es. https://example.com/download): ');
-    const icon = await ask('Nuovo percorso icona (es. /img/progetti/msw_icon.png): ');
-    const video = await ask('Nuovo nome file video (es. anteprima.mp4): '); // Chiedi solo il nome del file
+    const downloadLink = await ask('Link Download: '); // Modifica qui
+    const icon = await ask('Nuovo nome file icona (es. icon.png): '); // Chiedi solo il nome del file icona
+    const video = await ask('Nuovo nome file video (es. anteprima.mp4): '); // Chiedi solo il nome del file video
     const authors = await ask('Nuovi autori (es. Mario Rossi, Luigi Verdi): ');
 
     // Contenuto JS - non piu usato
@@ -290,11 +291,11 @@ async function modifyProject() {
         const updatedEntry = {
             name: title,
             directoryName: name,
-            icon: icon,
+            icon: icon, // Salva solo il nome del file icona
             zip: downloadLink,
             info: `https://downloads.kekkotech.com/projects/${name}/${name}.html`,
             authors: authors,
-            version: version, // Salva solo il nome del file
+            version: version, // Salva solo il nome del file video
             size: size,
             description: description,
             video: video
