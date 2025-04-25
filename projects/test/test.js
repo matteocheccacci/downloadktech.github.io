@@ -1,10 +1,10 @@
 const projectData = {
-    title: "test",
-    description: "test",
-    version: "test",
-    size: "test",
-    downloadLink: "test",
-    icon: "test",
-    video: "test",
-    authors: "test"
+    title: "Test",
+    description: "Test bellissimo",
+    version: "0.0",
+    size: "0 MB",
+    downloadLink: "404",
+    icon: "icon.png",
+    video: "anteprima",
+    authors: "io"
   };

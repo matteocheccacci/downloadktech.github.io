@@ -1,14 +1,14 @@
 const projectList = [
   {
-    "name": "test",
+    "name": "Test",
     "directoryName": "test",
-    "icon": "test",
-    "zip": "test",
+    "icon": "404",
+    "zip": "404",
     "info": "https://downloads.kekkotech.com/projects/test/test.html",
-    "authors": "test",
-    "version": "test",
-    "size": "test",
-    "description": "test",
-    "video": "test"
+    "authors": "io",
+    "version": "0.0",
+    "size": "0 MB",
+    "description": "Test bellissimo",
+    "video": "anteprima"
   }
 ];
