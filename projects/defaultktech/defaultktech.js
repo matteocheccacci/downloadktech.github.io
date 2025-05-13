@@ -4,7 +4,7 @@ const projectData = {
     version: "0.1",
     size: "0.0",
     downloadLink: "404",
-    icon: "icon.png",
+    icon: "ktechlogo.png",
     video: "404",
     authors: "Matteo Checcacci"
   };
