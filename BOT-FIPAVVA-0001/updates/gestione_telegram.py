@@ -11,7 +11,7 @@ import shutil
 import requests
 
 # ---------- Versione Software ----------
-VERSION = "FIPAVVA-1.1.5"
+VERSION = "FIPAVVA-1.1.6"
 
 CONFIG_FILE = "config.json"
 LOG_FILE = "log.txt"
@@ -21,8 +21,12 @@ SETTINGS_FILE = "settings.json"
 # ---------- Utility JSON ----------
 def load_json(filename, default):
     if os.path.exists(filename):
-        with open(filename, "r", encoding="utf-8") as f:
-            return json.load(f)
+        try:
+            with open(filename, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            print(f"Errore: Il file '{filename}' è corrotto. Verranno utilizzati i dati predefiniti.")
+            return default
     return default
 
 def save_json(filename, data):
@@ -38,10 +42,10 @@ class TelegramBotGUI:
         self.root.resizable(True, True)
 
         self.config = load_json(CONFIG_FILE, {"BOT_TOKEN": "", "CHAT_LIST": {}})
-        self.settings = load_json(SETTINGS_FILE, {"SIGNATURES": [
-        ], "UPDATE_SERVER": "downloads.kekkotech.com", "SERVICE_ID": "BOT-FIPAVVA-0001"})
+        # Aggiunta una lista di emoji di default nel file di impostazioni
+        self.settings = load_json(SETTINGS_FILE, {"SIGNATURES": [], "EMOJIS": ["👍", "🎉", "🔥", "🚀", "💡", "✅", "❌"], "UPDATE_SERVER": "downloads.kekkotech.com", "SERVICE_ID": "BOT-FIPAVVA-0001"})
         self.bot = None
-        self.init_bot()
+        
 
         # Stile Frutiger
         style = ttk.Style()
@@ -56,8 +60,11 @@ class TelegramBotGUI:
         self.create_tab_drafts()
         self.create_tab_history()
         self.create_tab_settings()
-        self.create_tab_info() 
+        self.create_tab_info()
+        self.create_tab_whats_new()
         self.load_draft()
+
+        self.init_bot()
 
     # ---------- Version Utility ----------
     def parse_version(self, v_str):
@@ -84,6 +91,7 @@ class TelegramBotGUI:
                 self.chat_combo.current(0)
         if hasattr(self, "signature_combo"):
             self.update_signature_combobox()
+        self.update_emoji_buttons()
 
     # ---------- Tab Messaggi ----------
     def create_tab_messages(self):
@@ -92,9 +100,13 @@ class TelegramBotGUI:
         frame = ttk.Frame(self.tab_messages, padding=10)
         frame.pack(fill="both", expand=True)
 
+        # Configura la griglia per espandersi
+        frame.grid_columnconfigure(0, weight=1)
+        frame.grid_rowconfigure(7, weight=1)
+
         ttk.Label(frame,text="Titolo Messaggio:", font=("Frutiger",12,"bold")).grid(row=0,column=0, sticky="w")
         self.title_entry = ttk.Entry(frame,width=60)
-        self.title_entry.grid(row=1,column=0,pady=5)
+        self.title_entry.grid(row=1,column=0,pady=5, sticky="ew")
 
         try:
             img = Image.open("fipav_logo.png")
@@ -105,23 +117,43 @@ class TelegramBotGUI:
 
         ttk.Label(frame,text="Seleziona Chat:", font=("Frutiger",12,"bold")).grid(row=2,column=0, sticky="w")
         self.chat_combo = ttk.Combobox(frame, values=list(self.config.get("CHAT_LIST",{}).keys()), state="readonly", width=30)
-        self.chat_combo.grid(row=3,column=0,pady=5)
+        self.chat_combo.grid(row=3,column=0,pady=5, sticky="w")
         if self.chat_combo['values']:
             self.chat_combo.current(0)
 
         ttk.Label(frame,text="Categoria:", font=("Frutiger",12,"bold")).grid(row=4,column=0, sticky="w")
         self.category_options = ["Territoriale: 🔴⚪️","Regionale: 🟢🔵","Nazionale: 🇮🇹","Lutto: ⚫"]
         self.category_combo = ttk.Combobox(frame, values=self.category_options, state="readonly", width=30)
-        self.category_combo.grid(row=5,column=0,pady=5)
+        self.category_combo.grid(row=5,column=0,pady=5, sticky="w")
         self.category_combo.current(0)
 
         ttk.Label(frame,text="Corpo del Messaggio:", font=("Frutiger",12,"bold")).grid(row=6,column=0, sticky="w")
-        self.body_text = tk.Text(frame,height=12,width=60,font=("Frutiger",11))
-        self.body_text.grid(row=7,column=0,columnspan=2,pady=5)
+        
+        # Frame per contenere il campo di testo e le barre di scorrimento
+        body_text_frame = ttk.Frame(frame)
+        body_text_frame.grid(row=7, column=0, sticky="nsew", pady=5)
+        body_text_frame.grid_columnconfigure(0, weight=1)
+        body_text_frame.grid_rowconfigure(0, weight=1)
+        
+        self.body_text = tk.Text(body_text_frame, height=12, width=60, font=("Frutiger",11), wrap="none")
+        self.body_text.grid(row=0, column=0, sticky="nsew")
+
+        # Barre di scorrimento
+        v_scrollbar = ttk.Scrollbar(body_text_frame, orient="vertical", command=self.body_text.yview)
+        v_scrollbar.grid(row=0, column=1, sticky="ns")
+        h_scrollbar = ttk.Scrollbar(body_text_frame, orient="horizontal", command=self.body_text.xview)
+        h_scrollbar.grid(row=1, column=0, sticky="ew")
+
+        self.body_text.config(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
+
+        # Frame per i pulsanti delle emoji
+        self.emoji_frame = ttk.Frame(frame)
+        self.emoji_frame.grid(row=7, column=1, sticky="nw", padx=5)
+        self.update_emoji_buttons()
 
         ttk.Label(frame,text="Firma:", font=("Frutiger",12,"bold")).grid(row=8,column=0, sticky="w")
         self.signature_combo = ttk.Combobox(frame, state="readonly", width=30)
-        self.signature_combo.grid(row=9,column=0,pady=5)
+        self.signature_combo.grid(row=9,column=0,pady=5, sticky="w")
         self.signature_combo.bind("<<ComboboxSelected>>", self.toggle_other_signature_field)
         self.update_signature_combobox()
 
@@ -151,6 +183,17 @@ class TelegramBotGUI:
         self.signature_combo['values'] = values
         if values:
             self.signature_combo.current(0)
+
+    # Nuova funzione per aggiornare i pulsanti delle emoji
+    def update_emoji_buttons(self):
+        # Rimuove tutti i vecchi pulsanti
+        for widget in self.emoji_frame.winfo_children():
+            widget.destroy()
+        
+        # Crea i nuovi pulsanti per ogni emoji
+        emojis = self.settings.get("EMOJIS", [])
+        for emoji in emojis:
+            ttk.Button(self.emoji_frame, text=emoji, command=lambda e=emoji: self.insert_emoji(e)).pack(side="top", pady=2, padx=2)
 
     # ---------- Tab Bozze ----------
     def create_tab_drafts(self):
@@ -283,7 +326,8 @@ class TelegramBotGUI:
 
         ttk.Label(frame, text="Bot Token:", font=("Frutiger",12,"bold")).grid(row=0,column=0, sticky="w")
         self.token_entry = ttk.Entry(frame,width=60)
-        self.token_entry.grid(row=1,column=0,pady=5)
+        self.token_entry.grid(row=1,column=0,pady=5, sticky="ew")
+        # Carica il valore dal file di configurazione
         self.token_entry.insert(0, self.config.get("BOT_TOKEN",""))
 
         ttk.Label(frame,text="Lista Chat:", font=("Frutiger",12,"bold")).grid(row=2,column=0, sticky="w")
@@ -299,7 +343,7 @@ class TelegramBotGUI:
         ttk.Button(chat_btn_frame,text="Rimuovi Chat", command=self.remove_chat).pack(side="left", padx=5)
 
         # Gestione firme
-        ttk.Label(frame,text="Firme Predefinite:", font=("Frutiger",12,"bold")).grid(row=5,column=0, sticky="w")
+        ttk.Label(frame,text="Firme Predefinite:", font=("Frutiger",12,"bold")).grid(row=5,column=0, sticky="w", pady=(10,0))
         self.sign_listbox = tk.Listbox(frame,height=6)
         self.sign_listbox.grid(row=6,column=0, sticky="ew")
         for s in self.settings.get("SIGNATURES",[]):
@@ -310,20 +354,34 @@ class TelegramBotGUI:
         ttk.Button(sign_btn_frame,text="Aggiungi Firma", command=self.add_signature).pack(side="left", padx=5)
         ttk.Button(sign_btn_frame,text="Rimuovi Firma", command=self.remove_signature).pack(side="left", padx=5)
 
+        # Gestione emoji
+        ttk.Label(frame,text="Emoji Predefinite:", font=("Frutiger",12,"bold")).grid(row=8,column=0, sticky="w", pady=(10,0))
+        self.emoji_listbox = tk.Listbox(frame,height=4)
+        self.emoji_listbox.grid(row=9,column=0, sticky="ew")
+        for e in self.settings.get("EMOJIS",[]):
+            self.emoji_listbox.insert("end", e)
+
+        emoji_btn_frame = ttk.Frame(frame)
+        emoji_btn_frame.grid(row=10,column=0,pady=5, sticky="w")
+        ttk.Button(emoji_btn_frame,text="Aggiungi Emoji", command=self.add_emoji).pack(side="left", padx=5)
+        ttk.Button(emoji_btn_frame,text="Rimuovi Emoji", command=self.remove_emoji).pack(side="left", padx=5)
+
         # ---------- Update Server e Service ID ----------
-        ttk.Label(frame, text="Update Server:", font=("Frutiger",12,"bold")).grid(row=8,column=0, sticky="w")
+        ttk.Label(frame, text="Update Server:", font=("Frutiger",12,"bold")).grid(row=11,column=0, sticky="w", pady=(10,0))
         self.update_server_entry = ttk.Entry(frame,width=60)
-        self.update_server_entry.grid(row=9,column=0,pady=5)
+        self.update_server_entry.grid(row=12,column=0,pady=5, sticky="ew")
+        # Carica il valore dal file di impostazioni
         self.update_server_entry.insert(0, self.settings.get("UPDATE_SERVER",""))
 
-        ttk.Label(frame, text="Service ID:", font=("Frutiger",12,"bold")).grid(row=10,column=0, sticky="w")
+        ttk.Label(frame, text="Service ID:", font=("Frutiger",12,"bold")).grid(row=13,column=0, sticky="w")
         self.service_id_entry = ttk.Entry(frame,width=60)
-        self.service_id_entry.grid(row=11,column=0,pady=5)
+        self.service_id_entry.grid(row=14,column=0,pady=5, sticky="ew")
+        # Carica il valore dal file di impostazioni
         self.service_id_entry.insert(0, self.settings.get("SERVICE_ID",""))
 
-        ttk.Button(frame,text="Controllo Aggiornamenti", command=self.check_update).grid(row=12,column=0,pady=10)
+        ttk.Button(frame,text="Controllo Aggiornamenti", command=self.check_update).grid(row=15,column=0,pady=10)
 
-        ttk.Button(frame,text="Salva Impostazioni", command=self.save_settings).grid(row=13,column=0,pady=10)
+        ttk.Button(frame,text="Salva Impostazioni", command=self.save_settings).grid(row=16,column=0,pady=10)
 
     # ---------- Tab Info ----------
     def create_tab_info(self):
@@ -335,7 +393,7 @@ class TelegramBotGUI:
         ttk.Label(frame, text=f"Copyright (C) 2025 KekkoTech Softwares - Italia", font=("Frutiger",12,"bold")).pack(anchor="w", pady=5)
         ttk.Label(frame, text=f"Per feedback: feedback@kekkotech.it", font=("Frutiger",12)).pack(anchor="w", pady=5)
         ttk.Label(frame, text=f"Per ricevere supporto: support@kekkotech.it", font=("Frutiger",12)).pack(anchor="w", pady=5)
-        ttk.Label(frame, text=f"\nInformazioni Software:", font=("Frutiger",16,"bold")).pack(anchor="w", pady=5)        
+        ttk.Label(frame, text=f"\nInformazioni Software:", font=("Frutiger",16,"bold")).pack(anchor="w", pady=5)         
         ttk.Label(frame, text=f"Versione Corrente: {VERSION}", font=("Frutiger",12)).pack(anchor="w", pady=5)
         update_server = self.settings.get("UPDATE_SERVER","Non impostato")
         service_id = self.settings.get("SERVICE_ID","Non impostato")
@@ -343,10 +401,38 @@ class TelegramBotGUI:
         ttk.Label(frame, text=f"Service ID: {service_id}", font=("Frutiger",12)).pack(anchor="w", pady=5)
         ttk.Label(frame, text=f"\nInformazioni Default:", font=("Frutiger",16,"bold")).pack(anchor="w", pady=5) 
         ttk.Label(frame, text=f"Default Update Server: downloads.kekkotech.com", font=("Frutiger",12)).pack(anchor="w", pady=5)
-        ttk.Label(frame, text=f"Default Settings: https://{update_server}/{service_id}/install/settings.json", font=("Frutiger",12)).pack(anchor="w", pady=5)
-        ttk.Label(frame, text=f"Default Configuration: https://{update_server}/{service_id}/install/config.json", font=("Frutiger",12)).pack(anchor="w", pady=5)
-        ttk.Label(frame, text=f"Default Drafts File: https://{update_server}/{service_id}/install/draft.json", font=("Frutiger",12)).pack(anchor="w", pady=5)
-        ttk.Label(frame, text=f"Default Log File: https://{update_server}/{service_id}/install/log.txt", font=("Frutiger",12)).pack(anchor="w", pady=5)
+        ttk.Label(frame, text=f"Default Settings: https://downloads.kekkotech.com/BOT-FIPAVVA-0001/install/settings.json", font=("Frutiger",12)).pack(anchor="w", pady=5)
+        ttk.Label(frame, text=f"Default Configuration: https://downloads.kekkotech.com/BOT-FIPAVVA-0001/install/config.json", font=("Frutiger",12)).pack(anchor="w", pady=5)
+        ttk.Label(frame, text=f"Default Drafts File: https://downloads.kekkotech.com/BOT-FIPAVVA-0001/install/draft.json", font=("Frutiger",12)).pack(anchor="w", pady=5)
+        ttk.Label(frame, text=f"Default Log File: https://downloads.kekkotech.com/BOT-FIPAVVA-0001/install/log.txt", font=("Frutiger",12)).pack(anchor="w", pady=5)
+    
+    #----------- Tab What's New ----------
+    def create_tab_whats_new(self):
+        self.tab_whats_new = ttk.Frame(self.notebook)
+        self.notebook.add(self.tab_whats_new, text="Novità")
+        frame = ttk.Frame(self.tab_whats_new, padding=10)
+        frame.pack(fill="both", expand=True)
+
+        ttk.Label(frame, text=f"Novità Versione {VERSION}:", font=("Frutiger",16,"bold")).pack(anchor="w", pady=5)
+        ttk.Label(frame, text="• Corretti i link di default nel tab 'Info'", font=("Frutiger",12)).pack(anchor="w", pady=2)
+        ttk.Label(frame, text="• Aggiunta la tab 'Novità' per mostrare le nuove funzionalità ad ogni aggiornamento", font=("Frutiger",12)).pack(anchor="w", pady=2)
+        ttk.Label(frame, text="• Aggiunto il supporto alle emoji", font=("Frutiger",12)).pack(anchor="w", pady=2)
+        ttk.Label(frame, text="• Aggiunti tasti rapidi per l'inserimento di emoji configurabili", font=("Frutiger",12)).pack(anchor="w", pady=2)
+
+    # Nuove funzioni per la gestione delle emoji
+    def add_emoji(self):
+        emoji = simpledialog.askstring("Aggiungi Emoji", "Inserisci l'emoji:")
+        if emoji:
+            self.emoji_listbox.insert("end", emoji)
+
+    def remove_emoji(self):
+        sel = self.emoji_listbox.curselection()
+        if sel:
+            self.emoji_listbox.delete(sel[0])
+
+    # Funzione per l'inserimento dell'emoji
+    def insert_emoji(self, emoji):
+        self.body_text.insert(tk.INSERT, emoji)
 
     # ---------- Funzioni Chat ----------
     def add_chat(self):
@@ -397,6 +483,10 @@ class TelegramBotGUI:
         sigs = [self.sign_listbox.get(i) for i in range(self.sign_listbox.size())]
         self.settings["SIGNATURES"] = sigs
 
+        # Salva emoji
+        emojis = [self.emoji_listbox.get(i) for i in range(self.emoji_listbox.size())]
+        self.settings["EMOJIS"] = emojis
+
         # Salva update server e service ID
         self.settings["UPDATE_SERVER"] = self.update_server_entry.get().strip()
         self.settings["SERVICE_ID"] = self.service_id_entry.get().strip()
@@ -444,7 +534,8 @@ class TelegramBotGUI:
         body = self.body_text.get("1.0","end-1c").strip()
         sig = self.other_signature_entry.get().strip() if self.signature_combo.get()=="Altro" else self.signature_combo.get()
         category_emoji = self.category_combo.get().split(":")[1].strip()
-        return f"{category_emoji}{title}{category_emoji}\n\n{body}\n\n~{sig}"
+        # Modificato per usare MarkdownV2
+        return f"{category_emoji} *{title}* {category_emoji}\n\n{body}\n\n_{sig}_"
 
     def preview_message(self):
         messagebox.showinfo("Anteprima Messaggio", self.get_message())
@@ -463,7 +554,7 @@ class TelegramBotGUI:
         chat_id = self.config["CHAT_LIST"].get(chat_name)
         async def send_async():
             try:
-                await self.bot.send_message(chat_id=chat_id, text=message)
+                await self.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
                 self.status_label.config(text="Messaggio inviato!", foreground="green")
                 self.log_message(message)
                 self.title_entry.delete(0,"end")
