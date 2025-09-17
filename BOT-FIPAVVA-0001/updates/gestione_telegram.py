@@ -11,7 +11,7 @@ import shutil
 import requests
 
 # ---------- Versione Software ----------
-VERSION = "FIPAVVA-1.1.6"
+VERSION = "FIPAVVA-1.1.7"
 
 CONFIG_FILE = "config.json"
 LOG_FILE = "log.txt"
@@ -46,12 +46,14 @@ class TelegramBotGUI:
         self.settings = load_json(SETTINGS_FILE, {"SIGNATURES": [], "EMOJIS": ["👍", "🎉", "🔥", "🚀", "💡", "✅", "❌"], "UPDATE_SERVER": "downloads.kekkotech.com", "SERVICE_ID": "BOT-FIPAVVA-0001"})
         self.bot = None
         
-
-        # Stile Frutiger
+        # Stile Frutiger Aero (basato su Vista)
         style = ttk.Style()
-        style.theme_use("clam")
-        style.configure(".", font=("Frutiger", 11))
+        style.theme_use("vista")
+        style.configure(".", font=("Frutiger", 11), background="#EFEFEF")
         style.configure("TButton", padding=6)
+        style.configure("TNotebook", background="#EFEFEF")
+        style.configure("TNotebook.Tab", background="#DEDEDE", borderwidth=0, font=("Frutiger", 11, "bold"))
+        style.map("TNotebook.Tab", background=[("selected", "#FFFFFF")])
 
         self.notebook = ttk.Notebook(root)
         self.notebook.pack(fill="both", expand=True)
@@ -367,21 +369,19 @@ class TelegramBotGUI:
         ttk.Button(emoji_btn_frame,text="Rimuovi Emoji", command=self.remove_emoji).pack(side="left", padx=5)
 
         # ---------- Update Server e Service ID ----------
-        ttk.Label(frame, text="Update Server:", font=("Frutiger",12,"bold")).grid(row=11,column=0, sticky="w", pady=(10,0))
+        ttk.Label(frame, text="Update Server:", font=("Frutiger",12,"bold")).grid(row=0,column=1, sticky="w", pady=(10,0))
         self.update_server_entry = ttk.Entry(frame,width=60)
-        self.update_server_entry.grid(row=12,column=0,pady=5, sticky="ew")
-        # Carica il valore dal file di impostazioni
+        self.update_server_entry.grid(row=1,column=1,pady=5, sticky="ew")
         self.update_server_entry.insert(0, self.settings.get("UPDATE_SERVER",""))
 
-        ttk.Label(frame, text="Service ID:", font=("Frutiger",12,"bold")).grid(row=13,column=0, sticky="w")
+        ttk.Label(frame, text="Service ID:", font=("Frutiger",12,"bold")).grid(row=2,column=1, sticky="w")
         self.service_id_entry = ttk.Entry(frame,width=60)
-        self.service_id_entry.grid(row=14,column=0,pady=5, sticky="ew")
-        # Carica il valore dal file di impostazioni
+        self.service_id_entry.grid(row=3,column=1,pady=5, sticky="new")
         self.service_id_entry.insert(0, self.settings.get("SERVICE_ID",""))
 
-        ttk.Button(frame,text="Controllo Aggiornamenti", command=self.check_update).grid(row=15,column=0,pady=10)
+        ttk.Button(frame,text="Controllo Aggiornamenti", command=self.check_update).grid(row=4,column=1, pady=10, sticky="n")
 
-        ttk.Button(frame,text="Salva Impostazioni", command=self.save_settings).grid(row=16,column=0,pady=10)
+        ttk.Button(frame,text="Salva Impostazioni", command=self.save_settings).grid(row=5,column=1, pady=10, sticky="n")
 
     # ---------- Tab Info ----------
     def create_tab_info(self):
@@ -413,11 +413,15 @@ class TelegramBotGUI:
         frame = ttk.Frame(self.tab_whats_new, padding=10)
         frame.pack(fill="both", expand=True)
 
-        ttk.Label(frame, text=f"Novità Versione {VERSION}:", font=("Frutiger",16,"bold")).pack(anchor="w", pady=5)
+        ttk.Label(frame, text=f"Novità Versione FIPAVVA-1.1.6:", font=("Frutiger",16,"bold")).pack(anchor="w", pady=5)
         ttk.Label(frame, text="• Corretti i link di default nel tab 'Info'", font=("Frutiger",12)).pack(anchor="w", pady=2)
         ttk.Label(frame, text="• Aggiunta la tab 'Novità' per mostrare le nuove funzionalità ad ogni aggiornamento", font=("Frutiger",12)).pack(anchor="w", pady=2)
         ttk.Label(frame, text="• Aggiunto il supporto alle emoji", font=("Frutiger",12)).pack(anchor="w", pady=2)
         ttk.Label(frame, text="• Aggiunti tasti rapidi per l'inserimento di emoji configurabili", font=("Frutiger",12)).pack(anchor="w", pady=2)
+
+        ttk.Label(frame, text=f"Novità Versione {VERSION}:", font=("Frutiger",16,"bold")).pack(anchor="w", pady=5)
+        ttk.Label(frame, text="• Modificato il tema del programma", font=("Frutiger",12)).pack(anchor="w", pady=2)
+        ttk.Label(frame, text="• Modificato il layout della schermata 'Impostazioni'", font=("Frutiger",12)).pack(anchor="w", pady=2)
 
     # Nuove funzioni per la gestione delle emoji
     def add_emoji(self):
