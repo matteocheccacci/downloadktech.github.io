@@ -11,7 +11,7 @@ import shutil
 import requests
 
 # ---------- Versione Software ----------
-VERSION = "FIPAVVA-1.1.3"
+VERSION = "FIPAVVA-1.1.4"
 
 CONFIG_FILE = "config.json"
 LOG_FILE = "log.txt"
@@ -343,7 +343,10 @@ class TelegramBotGUI:
         ttk.Label(frame, text=f"Service ID: {service_id}", font=("Frutiger",12)).pack(anchor="w", pady=5)
         ttk.Label(frame, text=f"\nInformazioni Default:", font=("Frutiger",16,"bold")).pack(anchor="w", pady=5) 
         ttk.Label(frame, text=f"Default Update Server: downloads.kekkotech.com", font=("Frutiger",12)).pack(anchor="w", pady=5)
-        ttk.Label(frame, text=f"Default Settings: https://{update_server}/{service_id}/defaultsetting.zip", font=("Frutiger",12)).pack(anchor="w", pady=5)
+        ttk.Label(frame, text=f"Default Settings: https://{update_server}/{service_id}/install/settings.json", font=("Frutiger",12)).pack(anchor="w", pady=5)
+        ttk.Label(frame, text=f"Default Settings: https://{update_server}/{service_id}/install/config.json", font=("Frutiger",12)).pack(anchor="w", pady=5)
+        ttk.Label(frame, text=f"Default Settings: https://{update_server}/{service_id}/install/draft.json", font=("Frutiger",12)).pack(anchor="w", pady=5)
+        ttk.Label(frame, text=f"Default Settings: https://{update_server}/{service_id}/install/log.txt", font=("Frutiger",12)).pack(anchor="w", pady=5)
 
     # ---------- Funzioni Chat ----------
     def add_chat(self):
