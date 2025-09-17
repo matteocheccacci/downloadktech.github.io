@@ -11,7 +11,7 @@ import shutil
 import requests
 
 # ---------- Versione Software ----------
-VERSION = "FIPAVVA-1.1.2"
+VERSION = "FIPAVVA-1.1.3"
 
 CONFIG_FILE = "config.json"
 LOG_FILE = "log.txt"
