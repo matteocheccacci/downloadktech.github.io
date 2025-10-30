@@ -11,16 +11,79 @@ import shutil
 from datetime import datetime
 import markdown
 
-# ---------- File Names ----------
-CONFIG_FILE = "config.json"
-SETTINGS_FILE = "settings.json"
-DRAFT_FILE = "draft.json"
-HISTORY_FILE = "history.json"
-LOG_FILE = "log.txt"
+# ---------- Directory and File Definitions ----------
+# Versione 1.2.0: Spostiamo i file in una sottocartella
+DATA_DIR = "eb_data"
+IMG_DIR = os.path.join(DATA_DIR, "img")
+
+# Assicura che le directory esistano
+os.makedirs(DATA_DIR, exist_ok=True)
+os.makedirs(IMG_DIR, exist_ok=True)
+
+# Nuovi percorsi
+CONFIG_FILE = os.path.join(DATA_DIR, "config.json")
+SETTINGS_FILE = os.path.join(DATA_DIR, "settings.json")
+DRAFT_FILE = os.path.join(DATA_DIR, "draft.json")
+HISTORY_FILE = os.path.join(DATA_DIR, "history.json") # Non usato attivamente nel codice v1.1.9, ma migrato
+LOG_FILE = os.path.join(DATA_DIR, "log.txt")
+LOGO_FILE = os.path.join(IMG_DIR, "logo.png")
+
+# Vecchi percorsi per la migrazione
+OLD_CONFIG_FILE = "config.json"
+OLD_SETTINGS_FILE = "settings.json"
+OLD_DRAFT_FILE = "draft.json"
+OLD_HISTORY_FILE = "history.json"
+OLD_LOG_FILE = "log.txt"
+OLD_LOGO_FILE = "logo.png"
+
 
 #---------- Software Info ----------
-SOFTWARE_VERSION = "1.1.9"
+SOFTWARE_VERSION = "1.2.0"
 SOFTWARE_VERSION_STR = f"{SOFTWARE_VERSION}"
+
+# ---------- Migration Function ----------
+def run_migration():
+    """
+    Esegue la migrazione dei file dalla root alla directory eb_data
+    se rileva una vecchia installazione.
+    """
+    # Controlla se i vecchi file esistono E la nuova directory dati è vuota (o non esiste config)
+    old_files_exist = any(os.path.exists(f) for f in [OLD_CONFIG_FILE, OLD_SETTINGS_FILE, OLD_DRAFT_FILE, OLD_LOG_FILE])
+    new_config_exists = os.path.exists(CONFIG_FILE)
+    
+    if old_files_exist and not new_config_exists:
+        # print("Vecchia installazione rilevata. Avvio migrazione...")
+        try:
+            moved_files = []
+            
+            # File di dati
+            for old_file, new_file in [
+                (OLD_CONFIG_FILE, CONFIG_FILE),
+                (OLD_SETTINGS_FILE, SETTINGS_FILE),
+                (OLD_DRAFT_FILE, DRAFT_FILE),
+                (OLD_HISTORY_FILE, HISTORY_FILE),
+                (OLD_LOG_FILE, LOG_FILE)
+            ]:
+                if os.path.exists(old_file):
+                    shutil.move(old_file, new_file)
+                    moved_files.append(os.path.basename(old_file))
+            
+            # File immagine
+            if os.path.exists(OLD_LOGO_FILE):
+                shutil.move(OLD_LOGO_FILE, LOGO_FILE)
+                moved_files.append(os.path.basename(OLD_LOGO_FILE))
+                
+            if moved_files:
+                messagebox.showinfo("Migrazione Dati",
+                                     f"EasyBroadcast è stato aggiornato!\n\n"
+                                     f"I tuoi file ({', '.join(moved_files)}) sono stati spostati con successo nella nuova cartella '{DATA_DIR}'.")
+            # print("Migrazione completata.")
+        except Exception as e:
+            messagebox.showerror("Errore di Migrazione",
+                                 f"Si è verificato un errore during lo spostamento dei file nella nuova directory 'eb_data'.\n\n"
+                                 # f"Errore: {e}\n\n"
+                                 "Per favore, sposta manually i file .json, .txt e logo.png nella cartella 'eb_data' e 'eb_data/img'.")
+            # print(f"Errore migrazione: {e}")
 
 # ---------- Utility Functions ----------
 def load_json(filename, default):
@@ -30,7 +93,7 @@ def load_json(filename, default):
             with open(filename, "r", encoding="utf-8") as f:
                 return json.load(f)
         except json.JSONDecodeError:
-            print(f"Errore: Il file '{filename}' è corrotto. Verranno utilizzati i dati predefiniti.")
+            # print(f"Errore: Il file '{filename}' è corrotto. Verranno utilizzati i dati predefiniti.")
             return default
     return default
 
@@ -75,7 +138,6 @@ class EBGUI:
         self.root.geometry("750x700")
 
         # Impostazioni predefinite, incluse le categorie
-        # MODIFICATO: Rimossi valori predefiniti per categorie
         default_settings = {
             "SIGNATURES": [],
             "EMOJIS": ["👍", "🎉", "🔥", "🚀", "💡", "✅", "❌"],
@@ -101,13 +163,18 @@ class EBGUI:
         self.bot = None
         self.init_bot()
 
-        # MODIFICATO: Corretta l'integrazione tra asyncio e tkinter
+        # Corretta l'integrazione tra asyncio e tkinter
         # 1. Creo un nuovo event loop per asyncio
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
         
         # 2. Avvio il gestore del loop dopo 1ms
         self.root.after(1, self.run_asyncio_loop)
+        
+        # MODIFICA: Esegui il controllo patch obbligatoria prima di tutto
+        if self.loop.run_until_complete(self.run_day_one_patch_check()):
+            # Se la patch è stata eseguita, l'app si chiuderà. Non continuare.
+            return
 
         if self.settings.get("isFirstOpen", True):
             # L'OOBE utilizza il loop in modo bloccante, il che va bene
@@ -115,8 +182,10 @@ class EBGUI:
             self.run_oobe()
         else:
             self.init_normal_gui()
+            
+        # MODIFICA: Mostra la finestra solo dopo che tutto è caricato
+        self.root.deiconify()
 
-    # MODIFICATO: Questa funzione ora integra correttamente il loop asyncio con il mainloop di tkinter
     def run_asyncio_loop(self):
         """
         Esegue una singola "iterazione" del loop asyncio e poi si ri-schedula
@@ -132,9 +201,10 @@ class EBGUI:
 
     # ---------- OOBE - Out of Box Experience ----------
     def run_oobe(self):
-        messagebox.showinfo("Benvenuto", "Benvenuto in EasyBroadcast!\n\nConfiguriamo insieme il tuo bot passo passo.")
+        # --- MODIFICA: Aggiunto parent=self.root ---
+        messagebox.showinfo("Benvenuto", "Benvenuto in EasyBroadcast!\n\nConfiguriamo insieme il tuo bot passo passo.", parent=self.root)
 
-        token = simpledialog.askstring("Token Bot", "Inserisci il token del bot (da BotFather):")
+        token = simpledialog.askstring("Token Bot", "Inserisci il token del bot (da BotFather):", parent=self.root)
         if not token:
             self.root.quit()
             return
@@ -144,134 +214,67 @@ class EBGUI:
             # Usiamo il loop che abbiamo creato per eseguire il task bloccante
             self.loop.run_until_complete(self.bot.get_me())
         except TelegramError as e:
-            messagebox.showerror("Errore", f"Token non valido:\n{e}")
+            messagebox.showerror("Errore", f"Token non valido.", parent=self.root) # Rimossi: \n{e}
             self.root.quit()
             return
         except Exception as e:
-            messagebox.showerror("Errore", f"Errore generico:\n{e}")
+            messagebox.showerror("Errore", f"Errore generico.", parent=self.root) # Rimossi: \n{e}
             self.root.quit()
             return
 
         self.config["BOT_TOKEN"] = token
         save_json(CONFIG_FILE, self.config)
 
-        messagebox.showinfo("Azione richiesta", "Ora aggiungi il bot a un gruppo o inviagli un messaggio privato,\npoi premi OK per rilevare la chat.")
+        messagebox.showinfo("Azione richiesta", "Ora aggiungi il bot a un gruppo o inviagli un messaggio privato,\npoi premi OK per rilevare la chat.", parent=self.root)
 
         try:
             updates = self.loop.run_until_complete(self.bot.get_updates(timeout=10))
             if not updates:
-                messagebox.showerror("Errore", "Nessuna chat trovata. Scrivi un messaggio al bot e riprova.", icon='error')
+                messagebox.showerror("Errore", "Nessuna chat trovata. Scrivi un messaggio al bot e riprova.", icon='error', parent=self.root)
                 self.root.quit()
                 return
             chat_id = updates[-1].message.chat.id
-            chat_name = simpledialog.askstring("Nome Chat", f"Trovata chat con ID {chat_id}.\nCome vuoi chiamarla?")
+            chat_name = simpledialog.askstring("Nome Chat", f"Trovata chat con ID {chat_id}.\nCome vuoi chiamarla?", parent=self.root)
             if not chat_name:
                 chat_name = f"Chat_{chat_id}"
             self.config["CHAT_LIST"][chat_name] = str(chat_id)
             save_json(CONFIG_FILE, self.config)
         except Exception as e:
-            messagebox.showerror("Errore", f"Non riesco a recuperare chat:\n{e}")
+            messagebox.showerror("Errore", f"Non riesco a recuperare chat.", parent=self.root) # Rimossi: \n{e}
             self.root.quit()
             return
 
-        sig = simpledialog.askstring("Firma predefinita", "Inserisci una firma iniziale (opzionale):")
+        sig = simpledialog.askstring("Firma predefinita", "Inserisci una firma iniziale (opzionale):", parent=self.root)
         if sig:
             self.settings["SIGNATURES"].append(sig)
-        emoji = simpledialog.askstring("Emoji extra", "Vuoi aggiungere un'emoji personalizzata?")
+        emoji = simpledialog.askstring("Emoji extra", "Vuoi aggiungere un'emoji personalizzata?", parent=self.root)
         if emoji:
             self.settings["EMOJIS"].append(emoji)
-        checkupd = messagebox.askquestion("Controllo Aggiornamenti", "Vuoi che EasyBroadcast controlli automaticamente gli aggiornamenti all'avvio?", icon='question')
+        cat = simpledialog.askstring("Categoria iniziale", "Vuoi aggiungere una categoria iniziale?", parent=self.root)
+        if cat:
+            self.settings["CATEGORIES"].append(cat)
+        
+        checkupd = messagebox.askquestion("Controllo Aggiornamenti", "Vuoi che EasyBroadcast controlli automaticamente gli aggiornamenti all'avvio?", icon='question', parent=self.root)
         self.settings["checkUpdatesOnStart"] = (checkupd == 'yes')
 
         self.settings["isFirstOpen"] = False
+        # --- MODIFICA: Questo è ora l'UNICO salvataggio alla fine dell'OOBE ---
         save_json(SETTINGS_FILE, self.settings)
 
-        # AGGIUNTO: Gestione categorie durante OOBE
-        if messagebox.askyesno("Categorie", "Configurazione base completata.\nVuoi gestire ora le categorie dei messaggi?"):
-            self.manage_categories_oobe()
+        # --- MODIFICA: Blocco categorie e vecchio salvataggio rimossi da qui ---
+        # (Spostati sopra e consolidati)
+        # --- FINE MODIFICA ---
 
-        messagebox.showinfo("Completato", "Configurazione completata!\nOra puoi usare EasyBroadcast.")
+        messagebox.showinfo("Completato", "Configurazione completata!\nOra puoi usare EasyBroadcast.", parent=self.root)
         self.init_normal_gui()    
-
-    def manage_categories_oobe(self):
-        """Crea una finestra modale Toplevel per gestire le categorie durante la prima configurazione."""
-        oobe_cat_window = tk.Toplevel(self.root)
-        # MODIFICATO: Rimosso "OOBE" dal titolo
-        oobe_cat_window.title("Gestione Categorie")
-        oobe_cat_window.geometry("350x300")
         
-        # Rendi la finestra modale
-        oobe_cat_window.grab_set()
-        oobe_cat_window.transient(self.root)
-
-        frame = ttk.Frame(oobe_cat_window, padding=10)
-        frame.pack(fill="both", expand=True)
-        
-        ttk.Label(frame, text="Gestisci Categorie:").pack(anchor="w")
-        
-        list_frame = ttk.Frame(frame)
-        list_frame.pack(fill="both", expand=True, pady=5)
-        
-        cat_listbox = tk.Listbox(list_frame, height=10)
-        cat_listbox.pack(side="left", fill="both", expand=True)
-        
-        scrollbar = ttk.Scrollbar(list_frame, orient="vertical", command=cat_listbox.yview)
-        scrollbar.pack(side="right", fill="y")
-        cat_listbox.config(yscrollcommand=scrollbar.set)
-        
-        # Carica le categorie correnti
-        current_categories = self.settings.get("CATEGORIES", [])
-        self.category_options = current_categories # Assicura che sia aggiornato
-        for cat in current_categories:
-            cat_listbox.insert("end", cat)
-            
-        btn_frame = ttk.Frame(frame)
-        btn_frame.pack(fill="x")
-
-        def add_cat():
-            cat = simpledialog.askstring("Aggiungi Categoria", "Inserisci categoria (es. Nome: Emoji):", parent=oobe_cat_window)
-            if cat:
-                cat_listbox.insert("end", cat)
-
-        def edit_cat():
-            sel = cat_listbox.curselection()
-            if not sel: return
-            idx = sel[0]
-            old_val = cat_listbox.get(idx)
-            new_val = simpledialog.askstring("Modifica Categoria", "Modifica categoria:", initialvalue=old_val, parent=oobe_cat_window)
-            if new_val and new_val != old_val:
-                cat_listbox.delete(idx)
-                cat_listbox.insert(idx, new_val)
-
-        def remove_cat():
-            sel = cat_listbox.curselection()
-            if sel:
-                if messagebox.askyesno("Rimuovi", "Sicuro di voler rimuovere la categoria selezionata?", parent=oobe_cat_window):
-                    cat_listbox.delete(sel[0])
-
-        ttk.Button(btn_frame, text="Aggiungi", command=add_cat).pack(side="left", padx=5)
-        ttk.Button(btn_frame, text="Modifica", command=edit_cat).pack(side="left", padx=5)
-        ttk.Button(btn_frame, text="Rimuovi", command=remove_cat).pack(side="left", padx=5)
-
-        def save_and_close():
-            # Salva le categorie modificate
-            self.settings["CATEGORIES"] = [cat_listbox.get(i) for i in range(cat_listbox.size())]
-            save_json(SETTINGS_FILE, self.settings)
-            # Aggiorna la variabile usata dalla GUI principale
-            self.category_options = self.settings["CATEGORIES"]
-            oobe_cat_window.destroy()
-
-        ttk.Button(frame, text="Fatto", command=save_and_close).pack(pady=10)
-        
-        # Attendi che questa finestra venga chiusa
-        self.root.wait_window(oobe_cat_window)
-
     # ---------- Normal GUI Initialization ----------
     def init_normal_gui(self):
         self.notebook = ttk.Notebook(self.root)
         self.notebook.pack(fill="both", expand=True)
         if self.settings.get("checkUpdatesOnStart", True):
-            self.check_update()
+            # MODIFICA: Silenzia il check se è già aggiornato
+            self.check_update(silent_if_updated=True)
         self.create_tab_messages()
         self.create_tab_drafts()
         self.create_tab_history()
@@ -295,14 +298,15 @@ class EBGUI:
         frame.pack(fill="both", expand=True)
 
         frame.grid_columnconfigure(0, weight=1)
-        frame.grid_rowconfigure(7, weight=1)
+        frame.grid_rowconfigure(7, weight=1) # Il box di testo (riga 7) si espande
 
         ttk.Label(frame, text="Titolo Messaggio:", font=("Frutiger", 12, "bold")).grid(row=0, column=0, sticky="w")
         self.title_entry = ttk.Entry(frame, width=60)
         self.title_entry.grid(row=1, column=0, pady=5, sticky="ew")
 
         try:
-            img = Image.open("logo.png")
+            # MODIFICA: Usa nuovo percorso logo
+            img = Image.open(LOGO_FILE)
             img.thumbnail((170, 80), Image.Resampling.LANCZOS)
             self.logo_image = ImageTk.PhotoImage(img)
             ttk.Label(frame, image=self.logo_image).grid(row=0, column=1, sticky="e", rowspan=2)
@@ -342,14 +346,39 @@ class EBGUI:
         h_scrollbar.grid(row=1, column=0, sticky="ew")
 
         self.body_text.config(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
+        
+        # --- Frame Allegati ---
+        self.attachment_frame = ttk.Frame(frame)
+        # --- MODIFICA POSIZIONE ---
+        # Spostato sotto il corpo del messaggio (row 7) e prima della firma (row 9)
+        self.attachment_frame.grid(row=8, column=0, columnspan=2, sticky="ew", padx=5, pady=(10, 5)) 
+        # --- FINE MODIFICA ---
+        
+        self.attachment_label = ttk.Label(self.attachment_frame, text="Nessun allegato", font=("Frutiger", 9, "italic"))
+        self.attachment_label.pack(side="top", anchor="w")
+
+        attach_btn_frame = ttk.Frame(self.attachment_frame)
+        attach_btn_frame.pack(side="top", anchor="w", pady=2)
+        
+        ttk.Button(attach_btn_frame, text="Allega Immagine", command=self.attach_image, width=15).pack(side="left", padx=2)
+        ttk.Button(attach_btn_frame, text="Allega File", command=self.attach_file, width=15).pack(side="left", padx=2)
+        
+        self.remove_attachment_btn = ttk.Button(self.attachment_frame, text="Rimuovi Allegato", command=self.remove_attachment, width=31)
+        # Il bottone "Rimuovi" viene mostrato solo quando c'è un allegato (vedi self.attach_file/image)
+        
+        self.current_attachment_path = None
+        self.current_attachment_type = None # Sarà 'photo' o 'document'
+        # --- Fine Frame Allegati ---
 
         self.emoji_frame = ttk.Frame(frame)
         self.emoji_frame.grid(row=7, column=1, sticky="nw", padx=5)
         self.update_emoji_buttons()
 
-        ttk.Label(frame, text="Firma:", font=("Frutiger", 12, "bold")).grid(row=8, column=0, sticky="w")
+        # --- MODIFICA POSIZIONE ---
+        ttk.Label(frame, text="Firma:", font=("Frutiger", 12, "bold")).grid(row=9, column=0, sticky="w")
         self.signature_combo = ttk.Combobox(frame, state="readonly", width=30)
-        self.signature_combo.grid(row=9, column=0, pady=5, sticky="w")
+        self.signature_combo.grid(row=10, column=0, pady=5, sticky="w")
+        # --- FINE MODIFICA ---
         self.signature_combo.bind("<<ComboboxSelected>>", self.toggle_other_signature_field)
         self.update_signature_combobox()
 
@@ -358,13 +387,17 @@ class EBGUI:
         self.other_signature_entry = ttk.Entry(self.other_signature_frame, width=30)
 
         btn_frame = ttk.Frame(frame)
-        btn_frame.grid(row=10, column=0, columnspan=2, pady=10)
+        # --- MODIFICA POSIZIONE ---
+        btn_frame.grid(row=11, column=0, columnspan=2, pady=10)
+        # --- FINE MODIFICA ---
         ttk.Button(btn_frame, text="Anteprima Messaggio", command=self.preview_message).pack(side="left", padx=5)
         ttk.Button(btn_frame, text="Salva Bozza", command=self.save_draft).pack(side="left", padx=5)
         ttk.Button(btn_frame, text="Invia Messaggio", command=self.send_message).pack(side="left", padx=5)
 
         self.status_label = ttk.Label(frame, text="", font=("Frutiger", 10, "italic"))
-        self.status_label.grid(row=11, column=0, columnspan=2)
+        # --- MODIFICA POSIZIONE ---
+        self.status_label.grid(row=12, column=0, columnspan=2)
+        # --- FINE MODIFICA ---
 
     def create_tab_drafts(self):
         self.tab_drafts = ttk.Frame(self.notebook)
@@ -393,7 +426,6 @@ class EBGUI:
         self.log_listbox = tk.Listbox(frame, height=20)
         self.log_listbox.pack(fill="both", expand=True, pady=5)
         
-        # MODIFICATO: Aggiunto pulsante Pulisci Cronologia
         btn_frame = ttk.Frame(frame)
         btn_frame.pack(pady=5, anchor="e") # Allineato a destra
         ttk.Button(btn_frame, text="Pulisci Cronologia", command=self.clear_history).pack()
@@ -432,7 +464,6 @@ class EBGUI:
 
         chat_btn_frame = ttk.Frame(lf_bot)
         chat_btn_frame.grid(row=4, column=0, pady=5, sticky="w")
-        # MODIFICATO: Testo pulsanti
         ttk.Button(chat_btn_frame, text="Aggiungi", command=self.add_chat).pack(side="left", padx=5)
         ttk.Button(chat_btn_frame, text="Modifica", command=self.edit_chat).pack(side="left", padx=5)
         ttk.Button(chat_btn_frame, text="Rimuovi", command=self.remove_chat).pack(side="left", padx=5)
@@ -456,6 +487,7 @@ class EBGUI:
         update_widgets_frame = ttk.Frame(lf_conn)
         update_widgets_frame.grid(row=4, column=0, sticky="ew", pady=(10,0))
 
+        # MODIFICA: La chiamata manuale ora non è silente
         ttk.Button(update_widgets_frame, text="Controllo aggiornamenti", command=self.check_update).pack(side="left", padx=(0,10))
         self.checkupdates_var = tk.BooleanVar(value=self.settings.get("checkUpdatesOnStart", True))
         self.checkupdates_cb = ttk.Checkbutton(update_widgets_frame, text="Controlla all'avvio", variable=self.checkupdates_var, command=self.toggle_startup_update_check)
@@ -481,7 +513,6 @@ class EBGUI:
 
         sign_btn_frame = ttk.Frame(tab_sig)
         sign_btn_frame.pack(pady=5, anchor="w")
-        # MODIFICATO: Aggiunto Modifica e testo semplificato
         ttk.Button(sign_btn_frame, text="Aggiungi", command=self.add_signature).pack(side="left", padx=5)
         ttk.Button(sign_btn_frame, text="Modifica", command=self.edit_signature).pack(side="left", padx=5)
         ttk.Button(sign_btn_frame, text="Rimuovi", command=self.remove_signature).pack(side="left", padx=5)
@@ -497,7 +528,6 @@ class EBGUI:
 
         emoji_btn_frame = ttk.Frame(tab_emoji)
         emoji_btn_frame.pack(pady=5, anchor="w")
-        # MODIFICATO: Aggiunto Modifica e testo semplificato
         ttk.Button(emoji_btn_frame, text="Aggiungi", command=self.add_emoji).pack(side="left", padx=5)
         ttk.Button(emoji_btn_frame, text="Modifica", command=self.edit_emoji).pack(side="left", padx=5)
         ttk.Button(emoji_btn_frame, text="Rimuovi", command=self.remove_emoji).pack(side="left", padx=5)
@@ -513,7 +543,6 @@ class EBGUI:
 
         cat_btn_frame = ttk.Frame(tab_cat)
         cat_btn_frame.pack(pady=5, anchor="w")
-        # MODIFICATO: Testo semplificato
         ttk.Button(cat_btn_frame, text="Aggiungi", command=self.add_category).pack(side="left", padx=5)
         ttk.Button(cat_btn_frame, text="Modifica", command=self.edit_category).pack(side="left", padx=5)
         ttk.Button(cat_btn_frame, text="Rimuovi", command=self.remove_category).pack(side="left", padx=5)
@@ -545,8 +574,14 @@ class EBGUI:
         ttk.Label(frame, text=f"Versione Corrente: {SOFTWARE_VERSION_STR}", font=("Frutiger", 12)).pack(anchor="w", pady=5)
         update_server = self.settings.get("UPDATE_SERVER", "Non impostato")
         service_id = self.settings.get("SERVICE_ID", "Non impostato")
-        ttk.Label(frame, text=f"Update Server: {update_server}", font=("Frutiger", 12)).pack(anchor="w", pady=5)
-        ttk.Label(frame, text=f"Service ID: {service_id}", font=("Frutiger", 12)).pack(anchor="w", pady=5)
+        
+        # --- MODIFICA: Trasformate in label di classe per l'aggiornamento ---
+        self.info_update_server_label = ttk.Label(frame, text=f"Update Server: {update_server}", font=("Frutiger", 12))
+        self.info_update_server_label.pack(anchor="w", pady=5)
+        self.info_service_id_label = ttk.Label(frame, text=f"Service ID: {service_id}", font=("Frutiger", 12))
+        self.info_service_id_label.pack(anchor="w", pady=5)
+        # --- FINE MODIFICA ---
+        
         ttk.Label(frame, text=f"\nInformazioni Default:", font=("Frutiger", 16, "bold")).pack(anchor="w", pady=5)
         ttk.Label(frame, text=f"Default Update Server: downloads.kekkotech.com", font=("Frutiger", 12)).pack(anchor="w", pady=5)
         ttk.Label(frame, text=f"Default Settings: https://downloads.kekkotech.com/EasyBroadcast/install/settings.json", font=("Frutiger", 12)).pack(anchor="w", pady=5)
@@ -558,6 +593,16 @@ class EBGUI:
     def create_tab_whats_new(self):
         self.tab_whats_new = ttk.Frame(self.notebook)
         self.notebook.add(self.tab_whats_new, text="Novità")
+        # --- MODIFICA: Contenuto spostato in funzione di refresh ---
+        self.refresh_tab_whats_new()
+        # --- FINE MODIFICA ---
+
+    # --- NUOVA FUNZIONE ---
+    def refresh_tab_whats_new(self):
+        """Pulisce e ricarica il contenuto della tab 'Novità'."""
+        # Pulisci il tab
+        for widget in self.tab_whats_new.winfo_children():
+            widget.destroy()
 
         whats_new_url = f"https://{self.settings.get('UPDATE_SERVER', 'downloads.kekkotech.com')}/{self.settings.get('SERVICE_ID', 'EasyBroadcast')}/updates/updtnotes.md"
         
@@ -571,13 +616,14 @@ class EBGUI:
             html_label.pack(fill="both", expand=True, padx=10, pady=10)
 
         except requests.exceptions.RequestException as e:
-            error_message = f"Errore during il recupero delle novità:\n{e}"
+            error_message = f"Errore during il recupero delle novità." # Rimossi: \n{e}
             error_label = ttk.Label(self.tab_whats_new, text=error_message, foreground="red")
             error_label.pack(fill="both", expand=True, padx=10, pady=10)
         except Exception as e:
-            error_message = f"Errore generico: {e}"
+            error_message = f"Errore generico." # Rimossi: {e}
             error_label = ttk.Label(self.tab_whats_new, text=error_message, foreground="red")
             error_label.pack(fill="both", expand=True, padx=10, pady=10)
+    # --- FINE NUOVA FUNZIONE ---
 
     # ---------- Drafts and History Methods ----------
     def refresh_draft_list(self):
@@ -604,7 +650,10 @@ class EBGUI:
             "body": self.body_text.get("1.0", "end-1c"),
             "signature": self.other_signature_entry.get() if self.signature_combo.get() == "Altro" else self.signature_combo.get(),
             "category": self.category_combo.get(),
-            "chat": self.chat_combo.get()
+            "chat": self.chat_combo.get(),
+            # Salva info allegati
+            "attachment_path": self.current_attachment_path,
+            "attachment_type": self.current_attachment_type
         }
         drafts = load_json(DRAFT_FILE, [])
         if not isinstance(drafts, list):
@@ -636,7 +685,7 @@ class EBGUI:
         self.body_text.delete("1.0", "end")
         self.body_text.insert("1.0", d.get("body", ""))
         
-        # MODIFICATO: Logica per gestire "Nessuna" o categorie non valide
+        # Gestione "Nessuna" o categorie non valide
         cat = d.get("category", "")
         combobox_values = self.category_combo['values']
         if cat in combobox_values:
@@ -658,6 +707,22 @@ class EBGUI:
             self.toggle_other_signature_field(None)
             self.other_signature_entry.delete(0, "end")
             self.other_signature_entry.insert(0, sig)
+            
+        # Carica info allegati
+        path = d.get("attachment_path")
+        type = d.get("attachment_type")
+        
+        # Pulisci sempre prima
+        self.remove_attachment() 
+        
+        if path and type and os.path.exists(path):
+            self.current_attachment_path = path
+            self.current_attachment_type = type
+            filename = os.path.basename(path)
+            self.attachment_label.config(text=f"{filename} ({type})")
+            self.remove_attachment_btn.pack(side="top", anchor="w", fill="x", pady=2)
+        else:
+            self.remove_attachment() # Assicura che sia pulito se il file non esiste più
 
     def refresh_history(self):
         self.log_listbox.delete(0, "end")
@@ -680,9 +745,9 @@ class EBGUI:
                         else:
                             self.log_listbox.insert("end", l_stripped)
             except Exception as e:
-                print(f"Errore lettura log: {e}")
+                # print(f"Errore lettura log: {e}")
+                pass
 
-    # MODIFICATO: Aggiunto metodo Pulisci Cronologia
     def clear_history(self):
         if messagebox.askyesno("Pulisci Cronologia", "Sei sicuro di voler eliminare permanentemente tutta la cronologia dei messaggi?"):
             try:
@@ -691,15 +756,15 @@ class EBGUI:
                 self.refresh_history() # Aggiorna la listbox (ora vuota)
                 messagebox.showinfo("Cronologia", "Cronologia pulita con successo.")
             except OSError as e:
-                messagebox.showerror("Errore", f"Impossibile eliminare il file di log: {e}")
+                messagebox.showerror("Errore", f"Impossibile eliminare il file di log.") # Rimossi: {e}
 
     # ---------- Settings Management Methods ----------
     
-    # MODIFICATO: Rimosso metodo manage_categories (non più chiamato)
-
     def toggle_other_signature_field(self, event):
         if self.signature_combo.get() == "Altro":
-            self.other_signature_frame.grid(row=9, column=1, sticky="w", pady=5, padx=5)
+            # --- MODIFICA POSIZIONE ---
+            self.other_signature_frame.grid(row=10, column=1, sticky="w", pady=5, padx=5)
+            # --- FINE MODIFICA ---
             self.other_signature_label.pack(side="left")
             self.other_signature_entry.pack(side="left")
         else:
@@ -724,7 +789,6 @@ class EBGUI:
         if emoji:
             self.emoji_listbox.insert("end", emoji)
 
-    # MODIFICATO: Aggiunto metodo Modifica Emoji
     def edit_emoji(self):
         sel = self.emoji_listbox.curselection()
         if not sel: return
@@ -776,7 +840,6 @@ class EBGUI:
         if sig:
             self.sign_listbox.insert("end", sig)
 
-    # MODIFICATO: Aggiunto metodo Modifica Firma
     def edit_signature(self):
         sel = self.sign_listbox.curselection()
         if not sel: return
@@ -791,7 +854,7 @@ class EBGUI:
         sel = self.sign_listbox.curselection()
         if sel: self.sign_listbox.delete(sel[0])
 
-    # AGGIUNTO: Metodi gestione Categorie
+    # Metodi gestione Categorie
     def add_category(self):
         cat = simpledialog.askstring("Aggiungi Categoria", "Inserisci categoria (es. Nome: Emoji):")
         if cat:
@@ -833,7 +896,6 @@ class EBGUI:
         emojis = [self.emoji_listbox.get(i) for i in range(self.emoji_listbox.size())]
         self.settings["EMOJIS"] = emojis
         
-        # AGGIUNTO: Salvataggio Categorie
         cats = [self.category_listbox.get(i) for i in range(self.category_listbox.size())]
         self.settings["CATEGORIES"] = cats
 
@@ -850,16 +912,34 @@ class EBGUI:
         if self.chat_combo['values']:
             self.chat_combo.current(0)
             
-        # MODIFICATO: Aggiornamento Categorie Combobox
+        # Aggiornamento Categorie Combobox
         self.category_options = self.settings.get("CATEGORIES", [])
+        
+        # --- CORREZIONE: 'combobox_values' definito qui ---
         combobox_values = self.category_options + ["Nessuna"]
         self.category_combo['values'] = combobox_values
         if combobox_values:
             self.category_combo.set("Nessuna") # Imposta "Nessuna" come predefinito
+        # --- FINE CORREZIONE ---
+            
+        # --- MODIFICA: Aggiorna dinamicamente le tab Info e Novità ---
+        try:
+            # Aggiorna tab Info
+            new_server = self.settings.get("UPDATE_SERVER", "Non impostato")
+            new_service = self.settings.get("SERVICE_ID", "Non impostato")
+            self.info_update_server_label.config(text=f"Update Server: {new_server}")
+            self.info_service_id_label.config(text=f"Service ID: {new_service}")
+            
+            # Aggiorna tab Novità
+            self.refresh_tab_whats_new()
+        except Exception as e:
+            # print(f"Erroro nell'aggiornamento dinamico delle tab: {e}")
+            pass # Non critico se fallisce
+        # --- FINE MODIFICA ---
             
         messagebox.showinfo("Impostazioni", "Salvate correttamente!")
 
-    # AGGIUNTO: Metodi Backup e Ripristino
+    # Metodi Backup e Ripristino
     def create_backup(self):
         """Salva tutte le configurazioni, bozze e cronologia in un unico file JSON."""
         try:
@@ -892,7 +972,7 @@ class EBGUI:
             messagebox.showinfo("Backup", f"Backup creato con successo in:\n{filepath}")
 
         except Exception as e:
-            messagebox.showerror("Backup", f"Errore durante la creazione del backup: {e}")
+            messagebox.showerror("Backup", f"Errore during la creazione del backup.") # Rimossi: {e}
 
     def load_backup(self):
         """Carica un file di backup e ripristina tutte le impostazioni."""
@@ -927,38 +1007,69 @@ class EBGUI:
             self.root.quit()
 
         except Exception as e:
-            messagebox.showerror("Backup", f"Errore during il caricamento del backup: {e}")
+            messagebox.showerror("Backup", f"Errore during il caricamento del backup.") # Rimossi: {e}
 
     # ---------- Update Check Methods ----------
-    def check_update(self):
-        # Modificas: Usa create_task invece di asyncio.run per evitare di creare un nuovo loop
-        self.loop.create_task(self._check_update_async())
     
-    async def _check_update_async(self):
-        server = self.update_server_entry.get().strip()
-        service = self.service_id_entry.get().strip()
-        if not server or not service:
-            messagebox.showwarning("Controllo Aggiornamenti", "Inserisci Update Server e Service ID!")
-            return
-
-        version_url = f"https://{server}/{service}/updates/version.txt"
-        script_url = f"https://{server}/{service}/updates/easybroadcast.py"
-
+    # --- NUOVA FUNZIONE PER DAYONEPATCH ---
+    async def run_day_one_patch_check(self):
+        """
+        Controlla la presenza di una patch obbligatoria all'avvio.
+        Se trovata, esegue l'aggiornamento e chiude l'app.
+        Ritorna True se un aggiornamento è stato eseguito, False altrimenti.
+        """
         try:
-            self.status_label.config(text=f"Controllo versione da {version_url}...", foreground="blue")
-            r = await self.loop.run_in_executor(None, lambda: requests.get(version_url, timeout=10))
+            server = self.settings.get("UPDATE_SERVER")
+            service = self.settings.get("SERVICE_ID")
+            if not server or not service:
+                return False # Non può controllare
+
+            patch_url = f"https://{server}/{service}/updates/isDayOnePatch.txt"
+            script_url = f"https://{server}/{service}/updates/easybroadcast.py"
+            version_url = f"https://{server}/{service}/updates/version.txt"
+
+            r = await self.loop.run_in_executor(None, lambda: requests.get(patch_url, timeout=5))
             r.raise_for_status()
-            server_version = r.text.strip()
+            content = r.text.strip().lower()
 
-            if parse_version(server_version) <= parse_version(SOFTWARE_VERSION_STR):
-                messagebox.showinfo("Controllo Aggiornamenti", f"Versione corrente ({SOFTWARE_VERSION_STR}) già aggiornata.")
-                self.status_label.config(text="")
-                return
+            if content == "true":
+                messagebox.showwarning("Aggiornamento Obbligatorio",
+                                       "È stato rilevato un aggiornamento critico (DayOnePatch).\n"
+                                       "L'applicazione verrà ora aggiornata e chiusa.\n\n"
+                                       "Si prega di riavviarla al termine.")
+                
+                try:
+                    # Recupera la versione per il messaggio finale
+                    r_ver = await self.loop.run_in_executor(None, lambda: requests.get(version_url, timeout=5))
+                    server_version = r_ver.text.strip()
+                except Exception:
+                    server_version = "sconosciuta"
 
-            if not messagebox.askyesno("Aggiornamento Disponibile", f"Nuova versione trovata: {server_version}\nVuoi scaricarla ora?"):
-                self.status_label.config(text="")
-                return
+                # Chiama la nuova funzione refatorizzata per eseguire l'aggiornamento
+                await self._perform_update(script_url, server_version)
+                
+                # Chiudi l'app dopo l'aggiornamento
+                self.root.quit()
+                return True # Aggiornamento eseguito
+                
+        except requests.exceptions.RequestException as e:
+            # File non trovato o server non raggiungibile -> considerato "no patch"
+            # print(f"Controllo DayOnePatch fallito (normale se non disponibile): {e}")
+            return False
+        except Exception as e:
+            # Errore generico
+            # print(f"Errore generico during controllo DayOnePatch: {e}")
+            return False
             
+        return False # Contenuto non "true", avvio normale
+
+    # --- NUOVA FUNZIONE (Refactoring) ---
+    async def _perform_update(self, script_url, server_version):
+        """
+Esegue il download e il backup dello script.
+        Ritorna True se riuscito, False altrimenti.
+        """
+        try:
             self.status_label.config(text=f"Download aggiornamento da {script_url}...", foreground="blue")
             r = await self.loop.run_in_executor(None, lambda: requests.get(script_url, timeout=30))
             r.raise_for_status()
@@ -974,8 +1085,55 @@ class EBGUI:
             self.status_label.config(text="")
             messagebox.showinfo("Controllo Aggiornamenti",
                                   f"Aggiornamento scaricato!\nVersione aggiornata: {server_version}\nIl backup della vecchia versione è stato salvato.\n\nRiavvia l'applicazione per applicare le modifiche.")
+            return True
         except Exception as e:
-            messagebox.showerror("Controllo Aggiornamenti", f"Errore during il download: {e}")
+            messagebox.showerror("Controllo Aggiornamenti", f"Errore during il download.") # Rimossi: {e}
+            self.status_label.config(text=f"Errore controllo aggiornamenti.", foreground="red")
+            return False
+    # --- FINE NUOVA FUNZIONE ---
+
+    def check_update(self, silent_if_updated=False):
+        """Avvia il task asincrono per il controllo aggiornamenti."""
+        # MODIFICA: Passa il flag "silent"
+        self.loop.create_task(self._check_update_async(silent_if_updated))
+    
+    async def _check_update_async(self, silent_if_updated=False):
+        server = self.update_server_entry.get().strip()
+        service = self.service_id_entry.get().strip()
+        if not server or not service:
+            # Non mostrare errore se "silent" (es. all'avvio)
+            if not silent_if_updated:
+                messagebox.showwarning("Controllo Aggiornamenti", "Inserisci Update Server e Service ID!")
+            return
+
+        version_url = f"https://{server}/{service}/updates/version.txt"
+        script_url = f"https://{server}/{service}/updates/easybroadcast.py"
+
+        try:
+            self.status_label.config(text=f"Controllo versione da {version_url}...", foreground="blue")
+            r = await self.loop.run_in_executor(None, lambda: requests.get(version_url, timeout=10))
+            r.raise_for_status()
+            server_version = r.text.strip()
+
+            if parse_version(server_version) <= parse_version(SOFTWARE_VERSION_STR):
+                # MODIFICA: Non mostrare nulla se "silent" e aggiornato
+                if not silent_if_updated:
+                    messagebox.showinfo("Controllo Aggiornamenti", f"Versione corrente ({SOFTWARE_VERSION_STR}) già aggiornata.")
+                self.status_label.config(text="")
+                return
+
+            if not messagebox.askyesno("Aggiornamento Disponibile", f"Nuova versione trovata: {server_version}\nVuoi scaricarla ora?"):
+                self.status_label.config(text="")
+                return
+            
+            # --- MODIFICA: Utilizza la funzione refatorizzata ---
+            # Chiama la nuova funzione refatorizzata per eseguire l'aggiornamento
+            await self._perform_update(script_url, server_version)
+            # --- FINE MODIFICA ---
+            
+        except Exception as e:
+            if not silent_if_updated:
+                messagebox.showerror("Controllo Aggiornamenti", f"Errore during il download.") # Rimossi: {e}
             self.status_label.config(text=f"Errore controllo aggiornamenti.", foreground="red")
     
     def toggle_startup_update_check(self):
@@ -985,11 +1143,42 @@ class EBGUI:
         save_json(SETTINGS_FILE, self.settings)
 
     # ---------- Message Sending Methods ----------
+    
+    # --- Metodi Allegati ---
+    def attach_file(self):
+        filepath = filedialog.askopenfilename(title="Seleziona un file")
+        if filepath:
+            self.current_attachment_path = filepath
+            self.current_attachment_type = 'document'
+            filename = os.path.basename(filepath)
+            self.attachment_label.config(text=f"{filename} (File)")
+            # Mostra il bottone Rimuovi
+            self.remove_attachment_btn.pack(side="top", anchor="w", fill="x", pady=2)
+
+    def attach_image(self):
+        filepath = filedialog.askopenfilename(
+            title="Seleziona un'immagine",
+            filetypes=[("Immagini", "*.png *.jpg *.jpeg *.bmp *.gif"), ("Tutti i file", "*.*")]
+        )
+        if filepath:
+            self.current_attachment_path = filepath
+            self.current_attachment_type = 'photo'
+            filename = os.path.basename(filepath)
+            self.attachment_label.config(text=f"{filename} (Immagine)")
+            # Mostra il bottone Rimuovi
+            self.remove_attachment_btn.pack(side="top", anchor="w", fill="x", pady=2)
+
+    def remove_attachment(self):
+        self.current_attachment_path = None
+        self.current_attachment_type = None
+        self.attachment_label.config(text="Nessun allegato")
+        # Nascondi il bottone Rimuovi
+        self.remove_attachment_btn.pack_forget()
+    
     def get_message(self):
         title = escape_markdown_v2(self.title_entry.get().strip())
         body = escape_markdown_v2(self.body_text.get("1.0", "end-1c").strip())
         
-        # MODIFICATO: Gestione firma "Nessuna"
         sig_value = self.signature_combo.get()
         sig = "" # Inizia vuota
         if sig_value == "Altro":
@@ -999,7 +1188,6 @@ class EBGUI:
         
         category_full = self.category_combo.get()
         category_emoji = ""
-        # MODIFICATO: Gestione categoria "Nessuna"
         if category_full and category_full != "Nessuna" and ":" in category_full:
             try:
                 category_emoji = category_full.split(":")[1].strip()
@@ -1009,10 +1197,29 @@ class EBGUI:
         # Aggiungi la firma solo se non è vuota
         final_sig = f"\n\n_{sig}_" if sig else ""
         
-        return f"{category_emoji} *{title}* {category_emoji}\n\n{body}{final_sig}"
+        # Se c'è un allegato, il titolo va nel messaggio, il body nella didascalia (o viceversa, a seconda dell'uso)
+        # Per ora, gestiamo solo il testo
+        
+        # Testo formattato
+        formatted_text = f"{category_emoji} *{title}* {category_emoji}\n\n{body}{final_sig}"
+        
+        # Testo per la didascalia (se c'è allegato, il body diventa la didascalia)
+        caption_text = f"{category_emoji} *{title}* {category_emoji}\n\n{body}{final_sig}"
+        
+        # Se c'è un allegato, il "messaggio" è solo il testo della didascalia
+        if self.current_attachment_type:
+            return caption_text
+        else:
+            # Se non c'è allegato, il messaggio è il testo completo
+            return formatted_text
 
     def preview_message(self):
-        messagebox.showinfo("Anteprima Messaggio", self.get_message())
+        msg = self.get_message()
+        if self.current_attachment_path:
+            messagebox.showinfo("Anteprima Messaggio (con allegato)", f"[File: {os.path.basename(self.current_attachment_path)}]\n\n{msg}")
+        else:
+            messagebox.showinfo("Anteprima Messaggio", msg)
+
 
     def log_message(self, message):
         try:
@@ -1020,7 +1227,8 @@ class EBGUI:
                 f.write(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -> {message}\n\n")
             self.refresh_history()
         except Exception as e:
-            print(f"Errore scrittura log: {e}")
+            # print(f"Errore scrittura log: {e}")
+            pass
 
     def send_message(self):
         self.loop.create_task(self.send_message_async())
@@ -1041,33 +1249,70 @@ class EBGUI:
             self.status_label.config(text="Errore: Seleziona una chat valida.", foreground="red")
             return
         
-        # MODIFICATO: Rimossa la verifica obbligatoria della categoria
-        # if not self.category_combo.get():
-        #      self.status_label.config(text="Errore: Seleziona una categoria.", foreground="red")
-        #      return
-
-        message_text = self.get_message()
+        message_text_or_caption = self.get_message()
+        
+        # Verifica se titolo O corpo sono vuoti (necessario per didascalia e testo)
         if not self.title_entry.get().strip() or not self.body_text.get("1.0", "end-1c").strip():
             self.status_label.config(text="Errore: Titolo e corpo del messaggio non possono essere vuoti.", foreground="red")
             return
             
         try:
             self.status_label.config(text=f"Invio messaggio a {chat_name}...", foreground="blue")
-            await self.bot.send_message(chat_id=chat_id, text=message_text, parse_mode='MarkdownV2')
+            
+            # Logica di invio: con o senza allegato
+            if self.current_attachment_path and self.current_attachment_type:
+                # C'è un allegato
+                with open(self.current_attachment_path, 'rb') as f:
+                    if self.current_attachment_type == 'photo':
+                        await self.bot.send_photo(chat_id=chat_id, photo=f, caption=message_text_or_caption, parse_mode='MarkdownV2')
+                    elif self.current_attachment_type == 'document':
+                        await self.bot.send_document(chat_id=chat_id, document=f, caption=message_text_or_caption, parse_mode='MarkdownV2')
+                
+                # Logga il messaggio con un prefisso per l'allegato
+                log_msg = f"[ALLEGATO: {self.current_attachment_type}] {message_text_or_caption}"
+            
+            else:
+                # Invia solo testo
+                await self.bot.send_message(chat_id=chat_id, text=message_text_or_caption, parse_mode='MarkdownV2')
+                log_msg = message_text_or_caption
+
+            # Se l'invio ha successo:
             self.status_label.config(text="Messaggio inviato!", foreground="green")
-            self.log_message(message_text)
+            self.log_message(log_msg)
+            
+            # Pulisci i campi
             self.title_entry.delete(0, "end")
             self.body_text.delete("1.0", "end")
             self.other_signature_entry.delete(0, "end")
+            self.remove_attachment() # Rimuovi l'allegato dopo l'invio
+            
+        except FileNotFoundError:
+             self.status_label.config(text=f"Errore: File allegato non trovato.", foreground="red")
+             messagebox.showerror("Errore File", f"Impossibile trovare il file da allegare.") # Rimossi: \n{self.current_attachment_path}
         except TelegramError as e:
-            self.status_label.config(text=f"Errore Telegram: {e}", foreground="red")
-            messagebox.showerror("Errore Telegram", f"Impossibile inviare il messaggio:\n{e}\n\nControlla la formattazione del testo. Spesso l'errore è causato da caratteri Markdown non correttamente 'escapati'.")
+            self.status_label.config(text=f"Errore Telegram.", foreground="red") # Rimossi: {e}
+            messagebox.showerror("Errore Telegram", f"Impossibile inviare il messaggio:\n\nControlla la formattazione del testo (o la dimensione del file). Spesso l'errore è causato da caratteri Markdown non correttamente 'escapati'.") # Rimossi: \n{e}
         except Exception as e:
             self.status_label.config(text=f"Errore: {e}", foreground="red")
+            messagebox.showerror("Errore", f"Si è verificato un errore.") # Rimossi: {e}
+
 
 # ---------- Main Execution Block ----------
 if __name__ == "__main__":
+    # --- MODIFICA ---
+    # 1. Crea la root window
     root = tk.Tk()
+    # 2. Nascondila temporaneamente
+    root.withdraw() 
+    
+    # 3. Esegui la migrazione (che ora può usare messagebox)
+    #    Questo assicura che la GUI carichi i file dai nuovi percorsi
+    run_migration()
+    
+    # 4. Inizializza l'app. Sarà l'app a mostrare la finestra.
     app = EBGUI(root)
+    
+    # 5. Avvia il mainloop
     root.mainloop()
+    # --- FINE MODIFICA ---
 
