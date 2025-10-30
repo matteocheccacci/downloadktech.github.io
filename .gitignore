@@ -1,5 +1,6 @@
 # Ignora i file .bat
-*.bat
+pull.bat
+push.bat
 
 # Ignora il file manage.js
 manage.js
