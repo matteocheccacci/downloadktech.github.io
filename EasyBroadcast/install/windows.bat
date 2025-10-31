@@ -1,6 +1,5 @@
 @echo off
-:: Imposta la codifica della console su UTF-8 per supportare i caratteri accentati
-chcp 65001 >nul
+:: Script di installazione per EasyBroadcast
 title EasyBroadcast - Installazione
 color 0b
 cls
@@ -92,43 +91,14 @@ if %errorlevel% neq 0 (
 echo [OK] File scaricati con successo.
 echo.
 
-:: --- 6. Crea Collegamento di Avvio (sul Desktop) ---
-echo [INFO] Creazione collegamento di avvio sul Desktop...
-set "SHORTCUT_PATH=%DESKTOP%\Avvia EasyBroadcast.lnk"
-
-:: Comando PowerShell per creare un collegamento .lnk robusto
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-    "$S_PATH = '%SHORTCUT_PATH%';" ^
-    "$T_PATH = 'python.exe';" ^
-    "$T_ARGS = '\"%SCRIPT_DEST%\"';" ^
-    "$W_DIR = '%APP_DIR%';" ^
-    "$I_PATH = '%LOGO_DEST%';" ^
-    "$WshShell = New-Object -ComObject WScript.Shell;" ^
-    "$Shortcut = $WshShell.CreateShortcut($S_PATH);" ^
-    "$Shortcut.TargetPath = $T_PATH;" ^
-    "$Shortcut.Arguments = $T_ARGS;" ^
-    "$Shortcut.WorkingDirectory = $W_DIR;" ^
-    "$Shortcut.IconLocation = $I_PATH;" ^
-    "$Shortcut.Save()"
-
-if %errorlevel% neq 0 (
-    echo [ERRORE] Creazione collegamento fallita.
-    echo Premi un tasto per uscire.
-    pause >nul
-    exit /b
-)
-
-echo [OK] Collegamento creato: %SHORTCUT_PATH%
-echo.
-
-:: --- 7. Fine ---
+:: --- 6. Fine ---
 echo =====================================================
-echo âœ… Installazione completata!
+echo ? Installazione completata!
 echo I file sono stati salvati in:
 echo %APP_DIR%
 echo.
 echo Puoi avviare EasyBroadcast dal collegamento
-echo "Avvia EasyBroadcast.lnk" che trovi sul tuo Desktop.
+echo "Avvia EasyBroadcast.py" che trovi sul tuo Desktop nella carteòòa "EasyBroadcast".
 echo =====================================================
 echo.
 echo Premi un tasto per chiudere.
