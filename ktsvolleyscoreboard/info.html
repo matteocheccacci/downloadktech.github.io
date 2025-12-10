@@ -484,7 +484,7 @@
                 
                 // Determina il tag di rilascio di GitHub (usa 'latest' se la versione non è valida)
                 const githubReleaseTag = currentVersion === 'N/D' ? 'latest' : `v${currentVersion}`;
-                const githubReleaseUrl = `https://github.com/${GITHUB_USER}/${REPO_NAME}/releases/tag/${githubReleaseTag}`;
+                const githubReleaseUrl = `https://github.com/${GITHUB_USER}/${REPO_NAME}/releases/download/${githubReleaseTag}/KTS.Volley.Scoreboard.Setup.exe/`;
                 
                 // Aggiorna l'interfaccia (Modifica 3: Assicurazione che il link download venga aggiornato)
                 document.getElementById('app_version_text').innerText = `${displayVersion} - Software per la gestione del tabellone da pallavolo`;
