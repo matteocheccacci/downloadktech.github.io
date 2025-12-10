@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Info - KTS Volley Scoreboard</title>
+    
+    <meta name="description" content="Scarica KTS Volley Scoreboard, l'applicazione Electron per la gestione in tempo reale dei punteggi di pallavolo. Include viste Stadio e TV (OBS/Chroma Key), licenza EULA e requisiti.">
+    
+    <meta name="keywords" content="Volley Scoreboard, Tabellone Pallavolo, KTS, Electron Scoreboard, OBS, Chroma Key, Segnapunti Volley, pallavolo">
+    <meta name="author" content="KekkoTech Softwares">
+    
+    <meta property="og:title" content="KTS Volley Scoreboard - Software Ufficiale">
+    <meta property="og:description" content="Applicazione professionale per la gestione del tabellone da pallavolo. Viste Stadio e Chroma Key per lo streaming.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://volleyscoreboard.kekkotech.it/info.html">
+    <meta property="og:image" content="https://volleyscoreboard.kekkotech.it/img/icon.png">
+    <link rel="icon" href="img/icon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600&family=Roboto:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* === VARIABILI STILE "LIQUID GLASS" === */
+        :root {
+            --glass-base-color: rgba(20, 20, 20, 0.60); 
+            --glass-blur: blur(25px) saturate(180%);
+            --glass-border: 1px solid rgba(255,255,255,0.35);
+            --glass-shine: 1px solid rgba(255,255,255,0.7);
+            --main-color: #f1c40f; /* Giallo Accento */
+            /* Nuovi colori per coerenza TV */
+            --to-active: #ff3b30;
+            --sub-active: #ffcc00;
+        }
+
+        /* === BASE E LAYOUT === */
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; padding: 0; 
+            background-image: url('img/bkg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            
+            font-family: 'Roboto', sans-serif; 
+            color: #ddd; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 20px 100px 20px;
+            font-size: 16px;
+        }
+
+        .container { 
+            max-width: 1000px; 
+            width: 100%; 
+        }
+
+        /* Mixin Materiale Glassy */
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, var(--glass-base-color) 40%, rgba(0,0,0,0.5) 100%);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: var(--glass-border);
+            border-top: var(--glass-shine);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        /* === HEADER E DOWNLOAD === */
+        .header { text-align: center; }
+        .header h1 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 5vh;
+            color: var(--main-color);
+            text-shadow: 0 0 10px rgba(241,196,15,0.5);
+            letter-spacing: 2px;
+            margin: 0; padding-bottom: 5px;
+            display: flex; align-items: center; justify-content: center; gap: 15px;
+        }
+        .header-icon {
+            height: 1.2em;
+            filter: drop-shadow(0 0 8px rgba(241,196,15,0.5));
+        }
+        .header p { color: #aaa; font-size: 1.2em; margin: 0; }
+        
+        .download-btn {
+            background: var(--main-color);
+            color: #000;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.4em;
+            font-weight: 900;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            margin-top: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(241,196,15,0.5);
+            gap: 10px;
+        }
+        .download-btn:hover {
+            background: #ffe566;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(241,196,15,0.7);
+        }
+        .version-badge {
+            background: rgba(0,0,0,0.1);
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.7em;
+            font-weight: 900;
+        }
+
+        /* === TITOLI E DETTAGLI === */
+        .section-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 2.2em;
+            color: #fff;
+            border-bottom: 2px solid var(--main-color);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        .feature-list li {
+            background: rgba(255,255,255,0.05);
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid var(--main-color);
+            transition: background 0.2s;
+            line-height: 1.5;
+        }
+        .feature-list li:hover { background: rgba(255,255,255,0.1); }
+        .feature-list strong { color: var(--main-color); font-weight: 700; margin-right: 5px; }
+
+        /* === ACCORDION DOCUMENTI === */
+        .accordion-header {
+            background: rgba(255,255,255,0.15);
+            padding: 15px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #555;
+            transition: background 0.2s;
+        }
+        .accordion-header:hover { background: rgba(255,255,255,0.25); }
+        .accordion-content {
+            padding: 20px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 0 0 15px 15px;
+            display: none;
+            overflow: hidden;
+            border: 1px solid #444;
+            border-top: none;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 0.9em;
+            line-height: 1.4;
+            color: #ccc;
+        }
+        .icon { font-size: 1.2em; transition: transform 0.3s; }
+        .active-acc .icon { transform: rotate(90deg); }
+        .doc-title { color: var(--main-color); font-family: 'Oswald', sans-weight; font-size: 1.1em; }
+
+        /* === CONTROLLI DI ESEMPIO: ADMIN (Pulsanti) === */
+        .admin-controls-wrapper {
+            background: #1e1e1e;
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+        }
+        .admin-controls-wrapper h4 {
+            color: #f1c40f;
+            border-bottom: 1px dashed #444;
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .example-controls {
+            display: flex;
+            justify-content: space-around;
+            gap: 15px;
+            user-select: none; 
+        }
+
+        .ctrl-group-ex {
+            background: #2a2a2a;
+            padding: 10px 15px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid #444;
+            min-width: 180px;
+        }
+        .ctrl-group-ex span {
+            font-size: 0.9em;
+            color: #ccc;
+            margin-bottom: 5px;
+            font-weight: 700;
+            text-align: center;
+        }
+        .ctrl-row-ex {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .ctrl-btn-ex {
+            cursor: pointer; 
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: none;
+            font-weight: bold;
+            color: #fff;
+            text-transform: uppercase;
+            font-size: 1.1em;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            transition: background 0.1s, transform 0.1s;
+        }
+        .ctrl-btn-ex:active { transform: scale(0.95); }
+        
+        .btn-green-ex { background: #27ae60; } 
+        .btn-red-ex { background: #c0392b; } 
+        .btn-blue-ex { background: #2980b9; } 
+        .btn-gray-ex { background: #555; } 
+
+        .ctrl-val-ex {
+            font-family: 'Roboto', sans-serif; 
+            font-size: 1.8em;
+            font-weight: 900;
+            color: var(--main-color); 
+            padding: 0 10px;
+            min-width: 40px;
+            text-align: center;
+            text-shadow: 0 0 5px rgba(241,196,15,0.5);
+        }
+        .ctrl-sub-btn { font-size: 0.8em; padding: 5px 10px; }
+
+        /* === MINI DISPLAY: OUTPUT (Tabellone) === */
+        .mini-display-wrapper {
+            /* Liquid Glass Style */
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(20, 20, 20, 0.5) 100%);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: var(--glass-border);
+            border-top: var(--glass-shine);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        .mini-display-wrapper h4 {
+            color: #fff;
+            margin-bottom: 20px;
+            text-align: center;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.5em;
+        }
+        
+        /* Contenitore principale che simula la metà del tabellone TV */
+        .mini-display-card {
+            display: flex;
+            align-items: stretch;
+            
+            /* Stile coerente con TV.html board */
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, var(--glass-base-color) 40%, rgba(0,0,0,0.4) 100%);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: var(--glass-border);
+            border-top: var(--glass-shine);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            
+            height: 100px; 
+            max-width: 450px;
+            margin: 0 auto;
+
+            /* Impaginazione interna per assomigliare alla metà sinistra del tabellone */
+            border-radius: 50px 0 0 50px; 
+            padding: 0;
+            overflow: hidden;
+        }
+
+        /* Blocco del nome squadra e indicatori */
+        .mini-team-info {
+            display: flex;
+            flex-direction: row; 
+            justify-content: space-between;
+            align-items: center;
+            flex: 1; 
+            height: 100%;
+            padding: 0 20px 0 30px; 
+        }
+        .mini-team-lbl { 
+            font-size: 1.4em; 
+            font-family: 'Oswald', sans-serif;
+            font-weight: 600; 
+            color: #fff; 
+            text-align: left;
+            margin: 0;
+            text-transform: uppercase;
+            text-shadow: 0 1px 5px rgba(0,0,0,0.8);
+        }
+        
+        /* Contenitore Punteggio */
+        .mini-score-sets-box {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            margin: 0;
+            flex-grow: 0; 
+        }
+
+        /* Blocco Punteggio */
+        .mini-score-box {
+            text-align: center;
+            min-width: 100px;
+            background: rgba(0,0,0,0.2);
+            border-left: 1px solid rgba(255,255,255,0.1); 
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 5px 15px;
+            border-radius: 0;
+        }
+        
+        .mini-score-box.main { 
+            border-right: none; 
+        }
+
+        .mini-lbl { font-size: 0.7em; color: #aaa; margin-bottom: 0px; line-height: 1; }
+        .mini-val { 
+            font-size: 3.5em; 
+            font-weight: 900; 
+            line-height: 1; 
+            color: #fff; 
+            font-family: 'Roboto', sans-serif;
+            letter-spacing: -2px;
+        }
+        
+        /* Contenitori per Timeout/Subs */
+        .indicator-wrapper { 
+            display: flex;
+            gap: 15px;
+        }
+
+        /* Stile Verticale per entrambi gli indicatori */
+        .indicator-group { 
+            display: flex; 
+            flex-direction: row; /* Modificato: torna orizzontale */
+            align-items: center; 
+            gap: 3px; 
+            background: none; 
+            padding: 0;
+            border: none;
+            box-shadow: none;
+        }
+        /* Scritta TO/SUB in verticale */
+        .ind-lbl { 
+            font-size: 0.7em; 
+            color: #fff; 
+            font-weight: 700; 
+            margin-right: 0;
+            
+            /* Trasforma il testo in verticale */
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            transform: rotate(180deg);
+            padding-left: 5px;
+        }
+        
+        /* TIMEOUT DOTS - ORA ANCHE VERTICALE E PIÙ GRANDE */
+        .dot-to-container {
+             display: flex; 
+             flex-direction: column; 
+             gap: 3px;
+        }
+        .dot-to { 
+            width: 12px; height: 18px; /* Ingrandito leggermente */
+            background: rgba(255,255,255,0.15); 
+            border-radius: 4px; 
+            transition: 0.3s;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.3);
+            margin: 1px 0;
+        }
+        .dot-to.active { 
+            background: var(--to-active); 
+            box-shadow: 0 0 10px var(--to-active); 
+            border-color: #ffb3b3; 
+        }
+
+        /* SUB DOTS - ORA VERTICALE E PIÙ GRANDE */
+        .dot-sub { 
+            width: 10px; height: 10px; 
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+            margin: 1px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .dot-sub.active {
+            background: var(--sub-active);
+            box-shadow: 0 0 10px var(--sub-active);
+            border-color: #ffeb99;
+        }
+
+        /* Contenitore per i SUB in verticale */
+        .sub-dots-row-output { 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center;
+            align-items: center;
+        }
+
+
+        /* === PIÈ DI PAGINA (ORA GLASSY) === */
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #ccc; 
+            font-size: 0.9em;
+            width: 100%;
+            /* STILE GLASSY */
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(20, 20, 20, 0.5) 100%);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-top: var(--glass-border);
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
+            padding: 15px 0; 
+            position: fixed; 
+            bottom: 0;
+            left: 0;
+            z-index: 99;
+        }
+        .footer a {
+            color: var(--main-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <script>
+        // === CONFIGURAZIONE UTENTE ===
+        const GITHUB_USER = 'matteocheccacci';
+        const REPO_NAME = 'KTS-Volley-Scoreboard'; 
+        // Valori coerenti con la configurazione di admin.html
+        const MAX_TO = 2; 
+        const MAX_SUB = 6; 
+        
+        let currentVersion = 'Caricamento...'; 
+
+        // --- GESTIONE VERSIONE DINAMICA TRAMITE FETCH (Correzione bug) ---
+        async function loadVersionAndSetup() {
+            try {
+                // Modifica 2: Fix lettura versione da version.txt con randomUUID
+                const response = await fetch('version.txt?' + crypto.randomUUID());
+
+                
+                let version = 'N/D';
+                if (response.ok) {
+                    version = (await response.text()).trim();
+                    // Rimuovi prefissi 'v' se presente per standardizzare
+                    if (version.toLowerCase().startsWith('v')) version = version.substring(1); 
+                }
+
+                currentVersion = version || 'N/D';
+                
+                // Formatta la versione per la visualizzazione (aggiunge 'v')
+                const displayVersion = currentVersion === 'N/D' ? currentVersion : 'v' + currentVersion;
+                
+                // Determina il tag di rilascio di GitHub (usa 'latest' se la versione non è valida)
+                const githubReleaseTag = currentVersion === 'N/D' ? 'latest' : `v${currentVersion}`;
+                const githubReleaseUrl = `https://github.com/${GITHUB_USER}/${REPO_NAME}/releases/tag/${githubReleaseTag}`;
+                
+                // Aggiorna l'interfaccia (Modifica 3: Assicurazione che il link download venga aggiornato)
+                document.getElementById('app_version_text').innerText = `${displayVersion} - Software per la gestione del tabellone da pallavolo`;
+                document.getElementById('version_badge').innerText = displayVersion;
+                document.getElementById('download_link').href = githubReleaseUrl;
+                
+            } catch (error) {
+                // Gestione di errori di fetching (es. file non trovato o errore di rete)
+                console.error("Impossibile caricare la versione (Fallback attivo):", error);
+                currentVersion = 'v?.?.? (Fallita)'; 
+                document.getElementById('app_version_text').innerText = `Versione ${currentVersion} - Software per la gestione del tabellone da pallavolo`;
+                document.getElementById('version_badge').innerText = 'N/D';
+            }
+
+            updateMiniDisplay();
+        }
+
+        // === LOGICA SIMULATA DEL TABELLONE ===
+        let miniState = { score: 5, sets: 1, timeouts: 1, subs: 3, prevScore: 5 }; 
+
+        function updateMiniDisplay() {
+            // Aggiorna i valori del display (punteggi)
+            document.getElementById('m_score').innerText = miniState.score;
+
+            // Aggiorna i valori dei controlli (statistiche numeriche)
+            document.getElementById('c_score_val').innerText = miniState.score;
+
+            // Aggiorna gli indicatori grafici (dots)
+            drawDots('dots_to_output', miniState.timeouts, MAX_TO, 'dot-to');
+            drawDots('dots_sub_output', miniState.subs, MAX_SUB, 'dot-sub');
+        }
+        
+        // Funzione per disegnare gli indicatori (Timeout o Subs)
+        function drawDots(containerId, current, max, className) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            // Non è necessario impostare lo stile del contenitore qui, lo facciamo nel CSS
+            
+            for(let i=0; i<max; i++) {
+                const d = document.createElement('div');
+                d.className = `${className} ${i < current ? 'active' : ''}`;
+                container.appendChild(d);
+            }
+        }
+
+        function actScore(action) {
+            if (action === 'add') {
+                miniState.score++;
+            } else if (action === 'sub' && miniState.score > 0) {
+                miniState.score--;
+            }
+            updateMiniDisplay();
+        }
+
+
+        function actTimeout(action) {
+            if (action === 'add') {
+                if (miniState.timeouts < MAX_TO) miniState.timeouts++;
+            } else if (action === 'sub' && miniState.timeouts > 0) {
+                miniState.timeouts--;
+            }
+            updateMiniDisplay();
+        }
+
+        function actSubs(action) {
+            // Modifica 1: Implementazione della logica di actSubs()
+            if (action === 'add') {
+                if (miniState.subs < MAX_SUB) miniState.subs++;
+            } else if (action === 'sub' && miniState.subs > 0) {
+                miniState.subs--;
+            }
+            updateMiniDisplay();
+        }
+        
+        document.addEventListener('DOMContentLoaded', loadVersionAndSetup);
+    </script>
+
+
+    <div class="container">
+        <header class="header glass-panel">
+            <h1>
+                <img id="header_icon" src="img/icon.png" class="header-icon" alt="Icona Volley Scoreboard">
+                KTS Volley Scoreboard
+            </h1>
+            <p id="app_version_text">Caricamento versione...</p>
+            
+            <a id="download_link" href="#" class="download-btn">
+                <span>⬇️ DOWNLOAD ULTIMA RELEASE</span>
+                <span id="version_badge" class="version-badge">...</span>
+            </a>
+        </header>
+
+        <section class="glass-panel">
+            <h2 class="section-title">✨ Panoramica e Funzionalità</h2>
+            <p>KTS Volley Scoreboard è un'applicazione Electron progettata per fornire una soluzione completa e professionale per la visualizzazione dei punteggi e delle informazioni di gioco durante le partite di pallavolo. È stata sviluppata per offrire sia una vista ottimizzata per lo stadio che una vista per le trasmissioni TV (OBS/Chroma Key).</p>
+            
+            <h2 class="section-title">📺 Viste Disponibili</h2>
+            <ul class="feature-list">
+                <li>
+                    <strong>Vista Stadio:</strong> Visualizzazione a schermo intero del punteggio principale, dei set, dei loghi e del titolo evento. Supporta il ridimensionamento dinamico dei nomi delle squadre.
+                </li>
+                <li>
+                    <strong>Vista TV (OBS/Chroma):</strong> Interfaccia grafica ottimizzata per l'uso in streaming o registrazioni. Offre la possibilità di scegliere sfondi Chroma Key (verde/blu) o trasparenza, con gestione degli sponsor mid-game.
+                </li>
+                <li>
+                    <strong>Pannello Admin:</strong> Interfaccia di controllo completa per l'aggiornamento in tempo reale di punteggi, regole, timer, timeout e sostituzioni.
+                </li>
+            </ul>
+        </section>
+
+        <section class="glass-panel">
+            <h2 class="section-title">🕹️ Esempio Controlli Interattivi</h2>
+            
+            <div class="admin-controls-wrapper">
+                <h4>🎛️ Pannello Admin (Input)</h4>
+                <p style="text-align:center; color:#ccc; font-size: 0.9em; margin-top:-15px;">Usa i controlli come faresti con l'applicazione reale.</p>
+                <div class="example-controls">
+                    <div class="ctrl-group-ex">
+                        <span>PUNTEGGIO</span>
+                        <div class="ctrl-row-ex">
+                            <button class="ctrl-btn-ex btn-red-ex" onclick="actScore('sub')">-</button>
+                            <div class="ctrl-val-ex" id="c_score_val"></div>
+                            <button class="ctrl-btn-ex btn-green-ex" onclick="actScore('add')">+</button>
+                        </div>
+                    </div>
+
+                    <div class="ctrl-group-ex">
+                        <span>TIMEOUT</span>
+                        <div style="display:flex; flex-direction: column; align-items:center;">
+                            <button class="ctrl-btn-ex btn-blue-ex" onclick="actTimeout('add')">T</button>
+                            <button class="ctrl-btn-ex btn-red-ex ctrl-sub-btn" onclick="actTimeout('sub')" style="margin-top: 5px;">-</button>
+                        </div>
+                    </div>
+
+                    <div class="ctrl-group-ex">
+                        <span>CAMBI</span>
+                        <div style="display:flex; flex-direction: column; align-items:center;">
+                            <button class="ctrl-btn-ex btn-gray-ex" onclick="actSubs('add')">C</button>
+                            <button class="ctrl-btn-ex btn-red-ex ctrl-sub-btn" onclick="actSubs('sub')" style="margin-top: 5px;">-</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mini-display-wrapper">
+                <h4>📺 Visualizzazione Tabellone (Output)</h4>
+                <p style="text-align:center; color:#ccc; font-size: 0.9em; margin-top:-15px;">Statistiche in tempo reale per la visualizzazione Stadio/TV.</p>
+                
+                <div class="mini-display-card">
+                    
+                    <div class="mini-team-info">
+                        <div class="mini-team-lbl">CASA</div>
+                        
+                        <div class="indicator-wrapper">
+                            
+                            <div class="indicator-group" style="margin-top: 5px;">
+                                <div id="dots_to_output" class="dot-to-container">
+                                    </div>
+                                <span class="ind-lbl">TO</span>
+                            </div>
+                            
+                            <div class="indicator-group" style="margin-top: 5px;">
+                                <div id="dots_sub_output" class="sub-dots-row-output">
+                                    </div>
+                                <span class="ind-lbl">SUB</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mini-score-sets-box" style="margin-right: 0;">
+                        <div class="mini-score-box main" style="min-width: 100px;">
+                            <div class="mini-lbl">PUNTEGGIO</div>
+                            <div class="mini-val" id="m_score">5</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
+            <h2 class="section-title">⚙️ Dettagli Tecnici</h2>
+            <ul class="feature-list">
+                <li>
+                    <strong>Tecnologia:</strong> Applicazione desktop costruita con **Electron** (Node.js/Chromium) per garantire un'esecuzione nativa su Windows/macOS.
+                </li>
+                <li>
+                    <strong>Comunicazione Real-Time:</strong> Utilizza **Socket.io** su Express.js per la comunicazione istantanea tra il pannello di amministrazione e le schermate di visualizzazione.
+                </li>
+                <li>
+                    <strong>Persistenza Dati:</strong> I dati di configurazione e gli upload di immagini sono salvati nella cartella utente di sistema per garantire la persistenza dopo la compilazione.
+                </li>
+                <li>
+                    <strong>Gestione Singola Istanza:</strong> Il software è configurato per consentire l'avvio di una **singola istanza** per prevenire conflitti di porta e crash.
+                </li>
+            </ul>
+        </section>
+
+        <section class="glass-panel">
+            <h2 class="section-title">📑 Documentazione e Licenze</h2>
+            
+            <div class="accordion-header" onclick="toggleAcc(this)">
+                <span class="doc-title">Informazioni Pre-Installazione (Requisiti)</span>
+                <span class="icon">▶</span>
+            </div>
+            <div class="accordion-content">
+                INFORMAZIONI NECESSARIE PER L'INSTALLAZIONE DI KTS VOLLEY SCOREBOARD
+
+REQUISITI DI SISTEMA MINIMI:
+* Sistema Operativo: Windows 10 o successivi (64-bit).
+* CPU: Processore Dual-Core o superiore.
+* RAM: 4 GB di RAM o superiore.
+* Spazio su Disco: Almeno 200 MB di spazio libero per l'installazione.
+
+INSTALLAZIONE:
+L'installazione guiderà l'utente attraverso i passaggi necessari. L'installazione richiede i diritti di Amministratore per completare l'operazione e installare le librerie richieste da Windows.
+Si prega di chiudere eventuali altre istanze dell'applicazione prima di procedere all'aggiornamento o alla reinstallazione.
+
+IMPORTANTE:
+L'uso di questa applicazione è regolato dal Contratto di Licenza con l'Utente Finale (EULA) incluso in questo setup.
+            </div>
+
+            <div class="accordion-header" onclick="toggleAcc(this)">
+                <span class="doc-title">Contratto di Licenza con l'Utente Finale (EULA)</span>
+                <span class="icon">▶</span>
+            </div>
+            <div class="accordion-content">
+                CONTRATTO DI LICENZA CON L'UTENTE FINALE (EULA)
+
+SOFTWARE: KTS Volley Scoreboard
+TITOLARE DELLA LICENZA (Licenziante): Matteo Checcacci con il nome di KekkoTech Softwares
+DATA DI RILASCIO: 10 dicembre 2025
+
+Questo Contratto di Licenza con l'Utente Finale ("EULA") è un accordo legale tra Lei (persona fisica o giuridica, "Utente") e KekkoTech Softwares per il software KTS Volley Scoreboard.
+IMPORTANTE: SCARICANDO, INSTALLANDO O UTILIZZANDO IL SOFTWARE, L'UTENTE ACCETTA DI ESSERE VINCOLATO DAI TERMINI DI QUESTO EULA.
+
+1. CONCESSIONE DI LICENZA
+KekkoTech Softwares Le concede una licenza non esclusiva e non trasferibile per l'uso di una singola copia del Software sul Suo computer.
+
+2. DIRITTI DI PROPRIETÀ INTELLETTUALE
+Il Software, compresi il codice sorgente, l'aspetto, la struttura e tutti i contenuti, è di proprietà esclusiva di KekkoTech Softwares ed è protetto dalle leggi sul copyright e dai trattati internazionali.
+La presente Licenza NON concede all'Utente alcun diritto sui file del codice sorgente.
+
+3. RESTRIZIONI
+È SEVERAMENTE PROIBITO all'Utente:
+a) Copiare, distribuire o vendere il Software a terzi.
+b) Modificare, decompilare, disassemblare o decodificare (reverse engineering) il Software.
+c) Utilizzare il Software per scopi illegali o non autorizzati.
+d) Rimuovere o alterare qualsiasi avviso di copyright o proprietario.
+
+4. LIMITAZIONE DI RESPONSABILITÀ
+Il Software viene fornito "così com'è" senza alcuna garanzia.
+KekkoTech Softwares non sarà responsabile per eventuali danni derivanti dall'uso o dall'impossibilità di usare il Software.
+
+5. CESSAZIONE
+La Licenza è valida fino alla sua risoluzione. I Suoi diritti ai sensi del presente EULA cesseranno immediatamente senza preavviso da parte di KekkoTech Softwares se non rispetta una qualsiasi delle disposizioni.
+
+6. CONTATTI E SUPPORTO
+Per domande legali, licenze o questioni commerciali, contattare:
+Email: support@kekkotech.it
+
+7. ATTRIBUZIONE OPEN SOURCE
+Il Software KTS Volley Scoreboard utilizza componenti software Open Source rilasciati sotto licenze permissive (come MIT e BSD) che non richiedono la condivisione del codice sorgente del Software proprietario.
+[Il testo completo della licenza è disponibile nella sezione "Attribuzioni Open Source"]
+
+© 2025 KekkoTech Softwares. Tutti i diritti riservati.
+            </div>
+
+            <div class="accordion-header" onclick="toggleAcc(this)">
+                <span class="doc-title">Informazioni Post-Installazione</span>
+                <span class="icon">▶</span>
+            </div>
+            <div class="accordion-content">
+                INSTALLAZIONE COMPLETATA - KTS VOLLEY SCOREBOARD
+
+Congratulazioni! KTS Volley Scoreboard è stato installato con successo sul Suo computer.
+
+AVVIO:
+È possibile avviare l'applicazione utilizzando il collegamento creato sul Desktop o nel Menu Start.
+
+SUPPORTO E CONTATTI:
+
+* SUPPORTO TECNICO (Per problemi di installazione, bug o malfunzionamenti):
+  Email: support@kekkotech.it
+
+* FEEDBACK E SUGGERIMENTI (Per nuove funzionalità, miglioramenti o commenti):
+  Email: feedback@kekkotech.it
+
+Grazie per aver scelto il software KekkoTech Softwares.
+
+© KekkoTech Softwares
+            </div>
+
+            <div class="accordion-header" onclick="toggleAcc(this)">
+                <span class="doc-title">Attribuzioni Open Source (Licenza MIT)</span>
+                <span class="icon">▶</span>
+            </div>
+            <div class="accordion-content">
+                KTS VOLLEY SCOREBOARD - RICONOSCIMENTO SOFTWARE OPEN SOURCE
+
+Il Software KTS Volley Scoreboard utilizza componenti software di terze parti rilasciati sotto licenze Open Source permissive (come MIT, ISC e BSD) che non richiedono la condivisione del codice sorgente del Software proprietario.
+In conformità con i requisiti di tali licenze, che permettono l'uso in software proprietario a condizione che gli avvisi di copyright e i testi di licenza vengano inclusi, forniamo di seguito i riconoscimenti e il testo della Licenza MIT (la licenza più comune tra i componenti utilizzati).
+--- COMPONENTI CHIAVE SOGGETTI A LICENZA MIT/BSD ---
+
+Il prodotto include software derivato dai seguenti progetti:
+* Electron (Licenze MIT/BSD, Copyright The Chromium Authors, The Electron Authors, Node.js Authors)
+* Node.js (Licenza MIT)
+* express (Licenza MIT)
+* socket.io (Licenza MIT)
+* ip (Licenza MIT)
+
+--- INIZIO TESTO LICENZA MIT/ISC ---
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject 
+to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+--- FINE TESTO LICENZA MIT/ISC ---
+            </div>
+            
+            <script>
+                function toggleAcc(header) {
+                    const content = header.nextElementSibling;
+                    const icon = header.querySelector('.icon');
+                    
+                    if (content.style.display === 'block') {
+                        content.style.display = 'none';
+                        header.classList.remove('active-acc');
+                    } else {
+                        // Chiudi tutti gli altri
+                        document.querySelectorAll('.accordion-content').forEach(c => c.style.display = 'none');
+                        document.querySelectorAll('.accordion-header').forEach(h => h.classList.remove('active-acc'));
+
+                        content.style.display = 'block';
+                        header.classList.add('active-acc');
+                    }
+                }
+            </script>
+        </section>
+
+    </div>
+
+    <footer class="footer">
+        &copy; 2025 KekkoTech Softwares. | Feedback: <a href="mailto:feedback@kekkotech.it">feedback@kekkotech.it</a>
+    </footer>
+</body>
+</html>
