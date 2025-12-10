@@ -6,7 +6,7 @@
     
     <title>Info - KTS Volley Scoreboard</title>
     
-    <meta name="description" content="Scarica KTS Volley Scoreboard, l'applicazione Electron per la gestione in tempo reale dei punteggi di pallavolo. Include viste Stadio e TV (OBS/Chroma Key), licenza EULA e requisiti.">
+    <meta name="description" content="Scarica KTS Volley Scoreboard, l'applicazione desktop per la gestione in tempo reale dei punteggi di pallavolo. Include viste Stadio e TV (OBS/Chroma Key), licenza EULA e requisiti.">
     
     <meta name="keywords" content="Volley Scoreboard, Tabellone Pallavolo, KTS, Electron Scoreboard, OBS, Chroma Key, Segnapunti Volley, pallavolo">
     <meta name="author" content="KekkoTech Softwares">
@@ -580,21 +580,58 @@
 
         <section class="glass-panel">
             <h2 class="section-title">✨ Panoramica e Funzionalità</h2>
-            <p>KTS Volley Scoreboard è un'applicazione Electron progettata per fornire una soluzione completa e professionale per la visualizzazione dei punteggi e delle informazioni di gioco durante le partite di pallavolo. È stata sviluppata per offrire sia una vista ottimizzata per lo stadio che una vista per le trasmissioni TV (OBS/Chroma Key).</p>
+            <p>KTS Volley Scoreboard è un'applicazione desktop progettata per fornire una soluzione completa e professionale per la visualizzazione dei punteggi e delle informazioni di gioco durante le partite di pallavolo. È stata sviluppata per offrire sia una vista ottimizzata per lo stadio che una vista per le trasmissioni TV (OBS/Chroma Key).</p>
             
             <h2 class="section-title">📺 Viste Disponibili</h2>
             <ul class="feature-list">
                 <li>
-                    <strong>Vista Stadio:</strong> Visualizzazione a schermo intero del punteggio principale, dei set, dei loghi e del titolo evento. Supporta il ridimensionamento dinamico dei nomi delle squadre.
+                    <strong>Vista Stadio (Index):</strong> Visualizzazione a schermo intero altamente leggibile, ideale per grandi schermi. Include punteggio in tempo reale, conteggio set, loghi squadra e titolo evento scorrevole. Il nome della squadra si ridimensiona dinamicamente per adattarsi allo spazio.
                 </li>
                 <li>
-                    <strong>Vista TV (OBS/Chroma):</strong> Interfaccia grafica ottimizzata per l'uso in streaming o registrazioni. Offre la possibilità di scegliere sfondi Chroma Key (verde/blu) o trasparenza, con gestione degli sponsor mid-game.
+                    <strong>Vista TV (TV):</strong> Interfaccia grafica ottimizzata con stile "Liquid Glass" per l'integrazione professionale in streaming o registrazioni (OBS). Offre opzioni Chroma Key (verde/blu) o sfondo trasparente e supporta banner sponsor a comparsa dinamici durante il gioco e i timer.
                 </li>
                 <li>
-                    <strong>Pannello Admin:</strong> Interfaccia di controllo completa per l'aggiornamento in tempo reale di punteggi, regole, timer, timeout e sostituzioni.
+                    <strong>Pannello Admin (Admin):</strong> Interfaccia di controllo intuitiva per la gestione completa di tutte le dinamiche di gioco e configurazione, accessibile tramite web browser locale protetto da password.
+                </li>
+            </ul>
+
+            <h2 class="section-title">⚙️ Funzionalità Complete</h2>
+            <ul class="feature-list">
+                <li>
+                    <strong>Gestione Punteggio e Set:</strong> Incremento/decremento rapido del punteggio, assegnazione set e logica automatica di vittoria set/match basata sulle regole configurate.
+                </li>
+                <li>
+                    <strong>Controllo Servizio e Campo:</strong> Assegnazione del battitore (serving) e funzionalità di **Cambio Campo** durante il set (manuale) o all'intervallo set (automatico) e durante il tie-break (al punto configurato, con animazione opzionale).
+                </li>
+                <li>
+                    <strong>Timeout e Sostituzioni:</strong> Tracciamento visivo e numerico dei **Timeout** (con limite configurabile) e delle **Sostituzioni** (con limite configurabile) usati da ciascuna squadra.
+                </li>
+                <li>
+                    <strong>Sistema Timer Professionale:</strong> Gestione automatica e manuale di tre tipologie di timer sovrapposti (overlay):
+                    <ul>
+                        <li>**Countdown Partita:** Conto alla rovescia fino all'orario di inizio gara configurato.</li>
+                        <li>**Timeout Tecnico:** Timer per la durata configurabile dei timeout (es. 30 secondi).</li>
+                        <li>**Intervallo Set:** Timer per la durata configurabile tra i set.</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Regole di Gioco Flessibili:</strong> Configurazione completa di tutti i parametri regolamentari: tipo di match (migliore di 3 o 5, fisso 3 o 5), punti set, punti tie-break, scarto minimo per set e tie-break, durata timeout e intervalli.
+                </li>
+                <li>
+                    <strong>Personalizzazione Grafica Avanzata:</strong> Caricamento di loghi squadra, logo evento, immagine di sfondo per la vista Stadio e gestione di un carosello di immagini sponsor per la vista TV/Overlay.
+                </li>
+                <li>
+                    <strong>Configurazione Viste Multiple:</strong> Possibilità di abilitare viste aggiuntive (Mirror View) su porte diverse per la connessione di schermi secondari.
+                </li>
+                <li>
+                    <strong>Messaggistica e Overlay:</strong> Visualizzazione di overlay a schermo intero per il **Cambio Campo automatico al Tie-Break**, l'**Annuncio del Vincitore** e la visualizzazione dello **Storico Set** durante l'intervallo.
+                </li>
+                <li>
+                    <strong>Clock di Sistema:</strong> Visualizzazione opzionale dell'orologio di sistema (ora corrente) sulla Vista Stadio.
                 </li>
             </ul>
         </section>
+
 
         <section class="glass-panel">
             <h2 class="section-title">🕹️ Esempio Controlli Interattivi</h2>
@@ -668,16 +705,19 @@
             <h2 class="section-title">⚙️ Dettagli Tecnici</h2>
             <ul class="feature-list">
                 <li>
-                    <strong>Tecnologia:</strong> Applicazione desktop costruita con **Electron** (Node.js/Chromium) per garantire un'esecuzione nativa su Windows/macOS.
+                    <strong>Architettura:</strong> Applicazione desktop basata su un **framework di runtime per applicazioni web** che consente l'esecuzione nativa su sistemi operativi desktop.
                 </li>
                 <li>
-                    <strong>Comunicazione Real-Time:</strong> Utilizza **Socket.io** su Express.js per la comunicazione istantanea tra il pannello di amministrazione e le schermate di visualizzazione.
+                    <strong>Comunicazione Real-Time:</strong> Sfrutta un'architettura **client-server locale** per la sincronizzazione istantanea dei dati tra il pannello di controllo e tutte le schermate di visualizzazione, garantendo un aggiornamento immediato del punteggio.
                 </li>
                 <li>
-                    <strong>Persistenza Dati:</strong> I dati di configurazione e gli upload di immagini sono salvati nella cartella utente di sistema per garantire la persistenza dopo la compilazione.
+                    <strong>Persistenza Dati:</strong> I dati di gioco e la configurazione globale sono salvati in file locali nella directory dei dati utente del sistema, assicurando che lo stato della partita e le impostazioni personalizzate vengano mantenute tra le sessioni.
                 </li>
                 <li>
-                    <strong>Gestione Singola Istanza:</strong> Il software è configurato per consentire l'avvio di una **singola istanza** per prevenire conflitti di porta e crash.
+                    <strong>Indirizzamento e Porta:</strong> Il software opera come un server web locale con un indirizzo IP di rete locale, permettendo l'accesso all'interfaccia di amministrazione e alle viste secondarie (TV, Stadio) da qualsiasi dispositivo connesso alla stessa rete.
+                </li>
+                <li>
+                    <strong>Gestione dell'Esecuzione:</strong> Implementa un controllo per l'**istanza singola** per prevenire conflitti di porta e garantire la stabilità operativa.
                 </li>
             </ul>
         </section>
