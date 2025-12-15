@@ -113,6 +113,19 @@
             font-size: 0.7em;
             font-weight: 900;
         }
+        .github-link {
+            color: var(--main-color);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin: 0 10px;
+            transition: color 0.2s;
+        }
+        .github-link:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+
 
         /* === TITOLI E DETTAGLI === */
         .section-title {
@@ -573,16 +586,20 @@
             <p id="app_version_text">Caricamento versione...</p>
             
             <a id="download_link" href="#" class="download-btn">
-                <span>⬇️ DOWNLOAD ULTIMA RELEASE</span>
+                <span>[Icona Download] DOWNLOAD ULTIMA RELEASE</span>
                 <span id="version_badge" class="version-badge">...</span>
             </a>
+            <div style="margin-top: 10px;">
+                <a href="https://github.com/KekkoTech-Softwares/KTS-Volley-Scoreboard-Realeses/releases" target="_blank" class="github-link">[Icona GitHub] Tutte le Release</a> |
+                <a href="https://github.com/KekkoTech-Softwares/KTS-Volley-Scoreboard-Realeses/issues" target="_blank" class="github-link">[Icona Issue] Segnala un Problema</a>
+            </div>
         </header>
 
         <section class="glass-panel">
-            <h2 class="section-title">✨ Panoramica e Funzionalità</h2>
+            <h2 class="section-title">[Icona Scintilla] Panoramica e Funzionalità</h2>
             <p>KTS Volley Scoreboard è un'applicazione desktop progettata per fornire una soluzione completa e professionale per la visualizzazione dei punteggi e delle informazioni di gioco durante le partite di pallavolo. È stata sviluppata per offrire sia una vista ottimizzata per lo stadio che una vista per le trasmissioni TV (OBS/Chroma Key).</p>
             
-            <h2 class="section-title">📺 Viste Disponibili</h2>
+            <h2 class="section-title">[Icona TV] Viste Disponibili</h2>
             <ul class="feature-list">
                 <li>
                     <strong>Vista Stadio (Index):</strong> Visualizzazione a schermo intero altamente leggibile, ideale per grandi schermi. Include punteggio in tempo reale, conteggio set, loghi squadra e titolo evento scorrevole. Il nome della squadra si ridimensiona dinamicamente per adattarsi allo spazio.
@@ -595,7 +612,7 @@
                 </li>
             </ul>
 
-            <h2 class="section-title">⚙️ Funzionalità Complete</h2>
+            <h2 class="section-title">[Icona Ingranaggio] Funzionalità Complete</h2>
             <ul class="feature-list">
                 <li>
                     <strong>Gestione Punteggio e Set:</strong> Incremento/decremento rapido del punteggio, assegnazione set e logica automatica di vittoria set/match basata sulle regole configurate.
@@ -634,10 +651,10 @@
 
 
         <section class="glass-panel">
-            <h2 class="section-title">🕹️ Esempio Controlli Interattivi</h2>
+            <h2 class="section-title">[Icona Joystick] Esempio Controlli Interattivi</h2>
             
             <div class="admin-controls-wrapper">
-                <h4>🎛️ Pannello Admin (Input)</h4>
+                <h4>[Icona Mixer] Pannello Admin (Input)</h4>
                 <p style="text-align:center; color:#ccc; font-size: 0.9em; margin-top:-15px;">Usa i controlli come faresti con l'applicazione reale.</p>
                 <div class="example-controls">
                     <div class="ctrl-group-ex">
@@ -668,7 +685,7 @@
             </div>
 
             <div class="mini-display-wrapper">
-                <h4>📺 Visualizzazione Tabellone (Output)</h4>
+                <h4>[Icona Display] Visualizzazione Tabellone (Output)</h4>
                 <p style="text-align:center; color:#ccc; font-size: 0.9em; margin-top:-15px;">Statistiche in tempo reale per la visualizzazione Stadio/TV.</p>
                 
                 <div class="mini-display-card">
@@ -702,7 +719,7 @@
                 </div>
             </div>
             
-            <h2 class="section-title">⚙️ Dettagli Tecnici</h2>
+            <h2 class="section-title">[Icona Circuito] Dettagli Tecnici</h2>
             <ul class="feature-list">
                 <li>
                     <strong>Architettura:</strong> Applicazione desktop basata su un **framework di runtime per applicazioni web** che consente l'esecuzione nativa su sistemi operativi desktop.
@@ -723,7 +740,7 @@
         </section>
 
         <section class="glass-panel">
-            <h2 class="section-title">📑 Documentazione e Licenze</h2>
+            <h2 class="section-title">[Icona Documento] Documentazione e Licenze</h2>
             
             <div class="accordion-header" onclick="toggleAcc(this)">
                 <span class="doc-title">Informazioni Pre-Installazione (Requisiti)</span>
