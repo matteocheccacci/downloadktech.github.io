@@ -1,0 +1,13 @@
+Nome File,[NOME ICONA],[DETTAGLI FUNZIONE]
+icon_download.png,Download Arrow,A downward-pointing arrow inside a sleek rounded rectangle or circle.
+icon_github.png,Git Hub Logo/Octopus,"A minimalist, stylized octopus/tentacle figure, often associated with coding collaboration."
+icon_issue.png,Exclamation Mark Badge,A bold exclamation mark (!) inside a clean rounded shield or circle.
+icon_sparkle.png,Star/Shine,"A simple four-point star or radiating spark symbol, representing new features or overview."
+icon_tv.png,TV Screen / Monitor,A smooth rectangle or screen shape with a simple icon of video play or broadcast signal.
+icon_gear.png,Cogwheel / Settings,"A single or multiple interlocking gear symbol, representing configuration and features."
+icon_joystick.png,Game Controller / Joystick,"A minimalist, modern game controller shape (round or smooth edges)."
+icon_mixer.png,Audio Fader / Mixer,"Two or three vertical slider bars (faders), representing administrative control and input."
+icon_display.png,Scoreboard Display,"A wide rectangular screen with sharp corners, possibly showing a simple number."
+icon_circuit.png,Circuit Board / Chip,"A stylized, interconnected grid or microchip symbol, representing architecture/tech."
+icon_document.png,Document Scroll,"A piece of paper or scroll, possibly with lines of text or a title bar, representing licenses."
+icon_arrow_right.png,Directional Arrow,"A single bold right-pointing arrow or chevron, used for toggling menu sections."
