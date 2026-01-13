@@ -871,23 +871,29 @@
                     <path d="M17.66 6.34l1.41-1.41"/>
                 </svg> Panoramica e Funzionalità
             </h2>
-            <p>KTS Volley Scoreboard è un'applicazione desktop progettata per fornire una soluzione completa e professionale per la visualizzazione dei punteggi e delle informazioni di gioco durante le partite di pallavolo. È stata sviluppata per offrire sia una vista ottimizzata per lo stadio che una vista per le trasmissioni TV (OBS/Chroma Key).</p>
+            <p>KTS Volley Scoreboard è un'applicazione desktop progettata per fornire una soluzione completa e professionale per la gestione di un tabellone interattivo per le partite di pallavolo. Il software permette anche di gestire tabelloni pubblicitari, dirette tv e molto altro. Viene aggiornato costantemente per migliorare le funzionalità esistenti e per aggiungerne di nuove.</p>
             
             <h2 class="section-title">
                 <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
                     <polyline points="17 2 12 7 7 2"/>
-                </svg> Viste Disponibili
+                </svg> Visuali Disponibili
             </h2>
             <ul class="feature-list">
                 <li>
-                    <strong>Vista Stadio (Index):</strong> Visualizzazione a schermo intero altamente leggibile, ideale per grandi schermi. Include punteggio in tempo reale, conteggio set, loghi squadra e titolo evento scorrevole. Il nome della squadra si ridimensiona dinamicamente per adattarsi allo spazio.
+                    <strong>Tabellone:</strong> Visualizzazione a schermo intero altamente leggibile, ideale per grandi schermi. Include punteggio in tempo reale, conteggio set, sostituzioni, videocheck. Supporta l'inserimento di loghi, nomi squadre personalizzati, timer e banner sponsor.
                 </li>
                 <li>
-                    <strong>Vista TV (TV):</strong> Interfaccia grafica ottimizzata con stile "Liquid Glass" per l'integrazione professionale in streaming o registrazioni (OBS). Offre opzioni Chroma Key (verde/blu) o sfondo trasparente e supporta banner sponsor a comparsa dinamici durante il gioco e i timer.
+                    <strong>Diretta:</strong> Interfaccia grafica ottimizzata per l'integrazione professionale in streaming o registrazioni (per esempio sfruttando OBS). Offre opzioni Chroma Key (verde/blu) o sfondo trasparente e supporta banner sponsor a comparsa dinamici durante il gioco e i timer.
                 </li>
                 <li>
-                    <strong>Pannello Admin (Admin):</strong> Interfaccia di controllo intuitiva per la gestione completa di tutte le dinamiche di gioco e configurazione, accessibile tramite web browser locale protetto da password.
+                    <strong>Sponsor:</strong> Interfeccia grafica dedicata alla visualizzazione di banner pubblicitari, supporta anche video YouTube.
+                </li>
+                <li>
+                    <strong>Pannello Admin:</strong> Interfaccia di controllo intuitiva per la gestione completa di tutte le dinamiche di gioco e configurazione, accessibile tramite web browser locale protetto da password.
+                </li>
+                <li>
+                    <strong>Pannello Regia Avanzata:</strong> Interfaccia di controllo per la gestione degli sponsor, banner pubblicitari, accessibile da web browser locale protetto da password.
                 </li>
             </ul>
 
@@ -902,13 +908,13 @@
                     <strong>Gestione Punteggio e Set:</strong> Incremento/decremento rapido del punteggio, assegnazione set e logica automatica di vittoria set/match basata sulle regole configurate.
                 </li>
                 <li>
-                    <strong>Controllo Servizio e Campo:</strong> Assegnazione del battitore (serving) e funzionalità di <strong>Cambio Campo</strong> durante il set (manuale) o all'intervallo set (automatico) e durante il tie-break (al punto configurato, con animazione opzionale).
+                    <strong>Controllo Servizio e Campo:</strong> Assegnazione del battitore e funzionalità di <strong>Cambio Campo</strong> durante il set (manuale) o all'intervallo set (automatico) e durante il tie-break (al punto configurato, con animazione opzionale).
                 </li>
                 <li>
                     <strong>Timeout e Sostituzioni:</strong> Tracciamento visivo e numerico dei <strong>Timeout</strong> (con limite configurabile) e delle <strong>Sostituzioni</strong> (con limite configurabile) usati da ciascuna squadra.
                 </li>
                 <li>
-                    <strong>Sistema Timer Professionale:</strong> Gestione automatica e manuale di tre tipologie di timer sovrapposti (overlay):
+                    <strong>Sistema Timer Professionale:</strong> Gestione automatica e manuale di tre tipologie di timer sovrapposti:
                     <ul>
                         <li><strong>Countdown Partita:</strong> Conto alla rovescia fino all'orario di inizio gara configurato.</li>
                         <li><strong>Timeout Tecnico:</strong> Timer per la durata configurabile dei timeout (es. 30 secondi).</li>
@@ -929,6 +935,9 @@
                 </li>
                 <li>
                     <strong>Clock di Sistema:</strong> Visualizzazione opzionale dell'orologio di sistema (ora corrente) sulla Vista Stadio.
+                </li>
+                <li>
+                    <strong>Salvataggio delle impostazioni in Cloud:</strong> Il tuo computer si è bloccato? Non ti preoccupare, eseguendo l'accesso a un KekkoTech ID le tue impostazioni verranno sincronizzate automaticamente con il cloud.
                 </li>
             </ul>
         </section>
@@ -986,7 +995,7 @@
                 <h4>
                     Visualizzazione Tabellone (Output)
                 </h4>
-                <p style="text-align:center; color:#ccc; font-size: 0.9em; margin-top:-15px;">Statistiche in tempo reale per la visualizzazione Stadio/TV.</p>
+                <p style="text-align:center; color:#ccc; font-size: 0.9em; margin-top:-15px;">Statistiche in tempo reale per la visualizzazione Palazzetto/TV.</p>
                 
                 <div class="mini-display-card">
                     
@@ -1029,13 +1038,13 @@
             </h2>
             <ul class="feature-list">
                 <li>
-                    <strong>Architettura:</strong> Applicazione desktop basata su un <strong>framework di runtime per applicazioni web</strong> che consente l'esecuzione nativa su sistemi operativi desktop.
+                    <strong>Architettura:</strong> Applicazione desktop basata su un <strong>framework di runtime per applicazioni web (Electron)</strong> che consente l'esecuzione nativa su sistemi operativi desktop.
                 </li>
                 <li>
                     <strong>Comunicazione Real-Time:</strong> Sfrutta un'architettura <strong>client-server locale</strong> per la sincronizzazione istantanea dei dati tra il pannello di controllo e tutte le schermate di visualizzazione, garantendo un aggiornamento immediato del punteggio.
                 </li>
                 <li>
-                    <strong>Persistenza Dati:</strong> I dati di gioco e la configurazione globale sono salvati in file locali nella directory dei dati utente del sistema, assicurando che lo stato della partita e le impostazioni personalizzate vengano mantenute tra le sessioni.
+                    <strong>Persistenza Dati:</strong> I dati di gioco e la configurazione globale sono salvati in file locali nella directory dei dati utente del sistema, assicurando che lo stato della partita e le impostazioni personalizzate vengano mantenute tra le sessioni. Inoltre viene eseguita periodicamente una sincronizzazione con il cloud associato al tuo KekkoTech ID.
                 </li>
                 <li>
                     <strong>Indirizzamento e Porta:</strong> Il software opera come un server web locale con un indirizzo IP di rete locale, permettendo l'accesso all'interfaccia di amministrazione e alle viste secondarie (TV, Stadio) da qualsiasi dispositivo connesso alla stessa rete.
