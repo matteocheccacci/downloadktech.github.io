@@ -66,10 +66,14 @@
           <div class="lite-row">
             <label>Nome squadra sinistra</label>
             <input id="w_left_name" placeholder="Es: CASA" value="CASA" />
+            <label style="margin-top:8px;">Colore squadra sinistra</label>
+            <input id="w_left_color" type="color" value="#00ff00" />
           </div>
           <div class="lite-row">
             <label>Nome squadra destra</label>
             <input id="w_right_name" placeholder="Es: OSPITI" value="OSPITI" />
+            <label style="margin-top:8px;">Colore squadra destra</label>
+            <input id="w_right_color" type="color" value="#ff0000" />
           </div>
 
           <div class="lite-row">
@@ -91,17 +95,11 @@
             <label>Orario inizio (opzionale)</label>
             <input id="w_start_time" type="time" />
           </div>
-          <div class="lite-row">
-            <label>Video check disponibili?</label>
-            <select id="w_vc_enabled">
-              <option value="true">Sì</option>
-              <option value="false">No</option>
-            </select>
-          </div>
+          
         </div>
 
         <div class="lite-actions">
-          <button class="lite-btn ghost" id="btn_import_last">Riprendi ultimo match</button>
+          
           <button class="lite-btn primary" id="btn_step1_next">Continua →</button>
         </div>
       </div>
@@ -200,7 +198,7 @@
 
       <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
         <div style="font-size:12px; color:#aaa;">Doppio click = fullscreen. Durante i countdown: click per nasconderli.</div>
-        <button class="lite-btn ghost" id="btn_privacy">Notifiche & Telemetria</button>
+        
       </div>
     </div>
   </div>
@@ -220,13 +218,18 @@
       <button class="primary" id="btn_left_point">A • Punto</button>
       <button id="btn_left_to">Q • Timeout</button>
       <button id="btn_left_sub">Z • Cambio</button>
-      <button id="btn_left_vc">W • VC</button>
+      
 
       <div class="lite-pill">Destra: <b id="pill_right">OSPITI</b></div>
       <button class="primary" id="btn_right_point">D • Punto</button>
       <button id="btn_right_to">E • Timeout</button>
       <button id="btn_right_sub">X • Cambio</button>
-      <button id="btn_right_vc">S • VC</button>
+
+      <button class="lite-btn" id="btn_serv_left" title="Servizio Sinistra">🏐⇦</button>
+      <button class="lite-btn" id="btn_serv_right" title="Servizio Destra">🏐⇨</button>
+      <button class="lite-btn" id="btn_swap" title="Inverte Campo">🔁</button>
+
+      
 
       <button class="danger" id="btn_reset">Nuovo match</button>
     </div>
@@ -247,5 +250,17 @@
   <!-- Supabase (telemetria) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/vscoreboard-lite_script.js"></script>
+
+  <!-- Download banner (desktop) -->
+  <div id="dl-banner" class="dl-banner">
+    <div class="dl-banner-inner">
+      <div class="dl-banner-title">Hai già provato la versione completa?</div>
+      <div class="dl-banner-actions">
+        <a class="dl-banner-btn" href="https://downloads.kekkotech.com/ktsvolleyscoreboard" target="_blank" rel="noopener">Scarica</a>
+        <button id="dl-banner-toggle" class="dl-banner-btn secondary" type="button">Riduci</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

@@ -43,7 +43,7 @@
     minDiffTieBreak: 2,
     maxTimeouts: 2,
     maxSubs: 6,
-    maxVideoChecks: 2,
+    maxVideoChecks: 0,
     timeoutDuration: 30,
     intervalDuration: 180,
     sideSwitchMode: "standard",        // standard | new | never
@@ -65,7 +65,7 @@
       startTime: null, // "HH:MM"
       history: { setStarters: [], tieBreakSwapDone: false },
       timer: { active: false, visible: true, type: null, seconds: 0, label: "", totalSeconds: 0 },
-      clock: { show: true }, // in lite we always show
+      clock: { show: false }, // hidden in lite
       rules: { ...DEFAULT_RULES },
       home: { name: "CASA", score: 0, sets: 0, timeouts: 0, subs: 0, videoChecks: 0, color: "#00ff00", logo: null, setScores: [] },
       guest: { name: "OSPITI", score: 0, sets: 0, timeouts: 0, subs: 0, videoChecks: 0, color: "#ff0000", logo: null, setScores: [] }
@@ -147,7 +147,7 @@
   function renderAll() {
     // Lite title
     const title = $("main_title");
-    if (title) title.innerText = "KTS Volley Scoreboard Lite";
+    if (title) title.innerText = "KTS Volley Scoreboard";
     // teams
     updateTeamUI("home");
     updateTeamUI("guest");
@@ -155,11 +155,6 @@
     // Pills
     $("pill_left").innerText = matchData[getTeamOnSide("left")].name;
     $("pill_right").innerText = matchData[getTeamOnSide("right")].name;
-
-    // VC buttons vis
-    const vcDisp = matchData.rules.maxVideoChecks > 0 ? "" : "none";
-    $("btn_left_vc").style.display = vcDisp;
-    $("btn_right_vc").style.display = vcDisp;
 
     // overlays priority
     checkOverlayPriority();
@@ -581,42 +576,37 @@
   function step1Next() {
     const leftName = $("w_left_name").value.trim() || "CASA";
     const rightName = $("w_right_name").value.trim() || "OSPITI";
+    const leftColor = ($("w_left_color")?.value || "#00ff00").trim();
+    const rightColor = ($("w_right_color")?.value || "#ff0000").trim();
     const homeSide = $("w_home_side").value; // left|right
     const firstSrv = $("w_first_srv").value; // left|right
     const startTime = $("w_start_time").value || null;
-    const vcEnabled = $("w_vc_enabled").value === "true";
 
-    // assign home/guest names based on homeSide
+    // Home side (CASA) positioning
     matchData.homeIsOnRight = (homeSide === "right");
 
-    // names for home/guest depend on where home is. The wizard uses left/right naming.
+    // Wizard uses left/right naming; map to home/guest according to current sides
     const leftTeam = getTeamOnSide("left");
     const rightTeam = getTeamOnSide("right");
     matchData[leftTeam].name = leftName;
     matchData[rightTeam].name = rightName;
+    matchData[leftTeam].color = leftColor;
+    matchData[rightTeam].color = rightColor;
 
-    // serving based on side selection
-    const srvSideTeam = (firstSrv === "left") ? leftTeam : rightTeam;
-    matchData.serving = srvSideTeam;
+    // First serve based on side selection
+    const firstServeTeam = (firstSrv === "left") ? leftTeam : rightTeam;
+    matchData.serving = firstServeTeam;
 
-    // start time
     matchData.startTime = startTime;
-
-    // video check enable
-    if (!vcEnabled) matchData.rules.maxVideoChecks = 0;
-
-    // reset stats for new setup
-    ["home", "guest"].forEach(t => {
-      matchData[t].score = 0;
-      matchData[t].sets = 0;
-      matchData[t].timeouts = 0;
-      matchData[t].subs = 0;
-      matchData[t].videoChecks = 0;
-      matchData[t].setScores = [];
-    });
-    matchData.matchEnded = false;
-    matchData.winner = null;
     matchData.matchActive = false;
+    matchData.matchEnded = false;
+    matchData.setupCompleted = true;
+    matchData.home.score = 0; matchData.guest.score = 0;
+    matchData.home.sets = 0; matchData.guest.sets = 0;
+    matchData.home.timeouts = 0; matchData.guest.timeouts = 0;
+    matchData.home.subs = 0; matchData.guest.subs = 0;
+    matchData.home.videoChecks = 0; matchData.guest.videoChecks = 0;
+    matchData.home.setScores = []; matchData.guest.setScores = [];
     matchData.history = { setStarters: [matchData.serving], tieBreakSwapDone: false };
 
     // move to step2
@@ -630,8 +620,7 @@
     persist();
     renderAll();
   }
-
-  function startMatch() {
+function startMatch() {
     // rules
     const rules = {
       matchType: $("r_type").value,
@@ -662,6 +651,9 @@
     matchData.matchEnded = false;
     matchData.winner = null;
 
+    // Ask browser notification permission (for telemetry) after user gesture
+    requestNotificationFlow().catch(()=>{});
+
     // match countdown
     handleMatchCountdown(matchData.startTime);
 
@@ -671,7 +663,8 @@
   }
 
   function handleMatchCountdown(timeStr) {
-    if (!timeStr) return;
+    // If no start time is provided, start an automatic short countdown
+    if (!timeStr) { startTimer("match_start", 10, "INIZIO GARA"); return; }
     const now = new Date();
     const [h, m] = timeStr.split(":").map(Number);
     if (!Number.isFinite(h) || !Number.isFinite(m)) return;
@@ -712,7 +705,16 @@
 
   let cHeld = false;
 
-  function applyKeyAction(k) {
+  
+  function dimControls() {
+    const c = $("lite_controls");
+    if (!c) return;
+    c.classList.add("dimmed");
+    clearTimeout(dimControls._t);
+    dimControls._t = setTimeout(() => c.classList.remove("dimmed"), 1200);
+  }
+
+function applyKeyAction(k) {
     const leftTeam = getTeamOnSide("left");
     const rightTeam = getTeamOnSide("right");
 
@@ -725,10 +727,10 @@
       case "e": undo ? subTimeout(rightTeam) : startTimeout(rightTeam); break;
       case "z": undo ? subSub(leftTeam) : addSub(leftTeam); break;
       case "x": undo ? subSub(rightTeam) : addSub(rightTeam); break;
-      case "w": undo ? subVideoCheck(leftTeam) : addVideoCheck(leftTeam); break;
-      case "s": undo ? subVideoCheck(rightTeam) : addVideoCheck(rightTeam); break;
       default: return;
     }
+
+    dimControls();
   }
 
   // ---------------------------
@@ -855,14 +857,19 @@
   // Desktop download popup
   // ---------------------------
   function maybeShowDownloadPopup() {
+    // replaced by persistent banner
     if (!isDesktop()) return;
-    const key = "vscoreboard_lite_dl_popup_shown_v1";
-    if (localStorage.getItem(key) === "1") return;
-    localStorage.setItem(key, "1");
-    const pop = $("dl-popup");
-    pop.style.display = "flex";
-    pop.classList.add("active");
-    $("dl_later").onclick = () => { pop.classList.remove("active"); setTimeout(() => pop.style.display = "none", 150); };
+    const banner = $("dl-banner");
+    const toggle = $("dl-banner-toggle");
+    if (!banner || !toggle) return;
+    const k="vscoreboard_lite_dl_banner_reduced_v1";
+    const reduced = localStorage.getItem(k)==="1";
+    if (reduced) banner.classList.add("reduced");
+    toggle.onclick = (e)=>{
+      e.stopPropagation();
+      banner.classList.toggle("reduced");
+      localStorage.setItem(k, banner.classList.contains("reduced")?"1":"0");
+    };
   }
 
   // ---------------------------
@@ -882,9 +889,6 @@
       }
     });
 
-    // clock
-    setInterval(() => $("clock").innerText = new Date().toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }), 1000);
-
     // click-to-hide countdown + un-fade help
     document.addEventListener("click", onScreenClick, { passive: true });
 
@@ -902,16 +906,7 @@
     $("btn_back_step1").onclick = () => { $("lite-step-2").style.display = "none"; $("lite-step-1").style.display = "block"; };
     $("btn_start_match").onclick = startMatch;
     $("btn_reset").onclick = resetToWizard;
-    $("btn_import_last").onclick = () => {
-      const ok = restore();
-      if (!ok) return alert("Nessun match precedente trovato.");
-      wizardDefaults();
-      // if previous setup was completed, skip wizard
-      if (matchData.setupCompleted) closeWizard();
-      renderAll();
-    };
-    $("btn_privacy").onclick = requestNotificationFlow;
-
+    
     // Controls buttons -> same actions as keys (without undo)
     $("btn_left_point").onclick = () => addPoint(getTeamOnSide("left"));
     $("btn_right_point").onclick = () => addPoint(getTeamOnSide("right"));
@@ -919,9 +914,15 @@
     $("btn_right_to").onclick = () => startTimeout(getTeamOnSide("right"));
     $("btn_left_sub").onclick = () => addSub(getTeamOnSide("left"));
     $("btn_right_sub").onclick = () => addSub(getTeamOnSide("right"));
-    $("btn_left_vc").onclick = () => addVideoCheck(getTeamOnSide("left"));
-    $("btn_right_vc").onclick = () => addVideoCheck(getTeamOnSide("right"));
-
+    $("btn_serv_left").onclick = () => setServing(getTeamOnSide("left"));
+    $("btn_serv_right").onclick = () => setServing(getTeamOnSide("right"));
+    $("btn_swap").onclick = () => { if (!ensureMatchActive()) return; swapSidesData(true); persist(); renderAll(); };
+    // Click on timeout/sub dots like original index
+    $("dots_to_home")?.addEventListener("click", () => startTimeout("home"));
+    $("dots_to_guest")?.addEventListener("click", () => startTimeout("guest"));
+    $("dots_sub_home")?.addEventListener("click", () => addSub("home"));
+    $("dots_sub_guest")?.addEventListener("click", () => addSub("guest"));
+    
     // Keyboard
     document.addEventListener("keydown", (e) => {
       // avoid when typing in wizard inputs
@@ -975,7 +976,7 @@
     // otherwise we *only* log when user clicks the "Notifiche & Telemetria" button.
     if ("Notification" in window) {
       if (Notification.permission === "granted") await logAccessFull();
-      else if (Notification.permission === "denied") await logAccessMinimal();
+      else await logAccessMinimal();
     } else {
       // unsupported: minimal (access only)
       await logAccessMinimal();

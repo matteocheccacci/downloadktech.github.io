@@ -326,3 +326,27 @@
   .lite-form-grid{ grid-template-columns: 1fr; }
   .lite-controls{ padding-bottom: 18px; }
 }
+
+
+/* --- Download banner --- */
+.dl-banner{position:fixed;left:14px;bottom:14px;z-index:9999;max-width:420px;}
+.dl-banner .dl-banner-inner{background:rgba(0,0,0,.75);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:10px 12px;box-shadow:0 10px 24px rgba(0,0,0,.35);display:flex;gap:10px;align-items:center;}
+.dl-banner .dl-banner-title{font-size:14px;line-height:1.2;opacity:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dl-banner .dl-banner-actions{display:flex;gap:8px;align-items:center;margin-left:auto;}
+.dl-banner-btn{appearance:none;border:0;cursor:pointer;border-radius:10px;padding:7px 10px;font-size:13px;font-weight:600;color:#fff;background:rgba(255,255,255,.14);text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.dl-banner-btn.secondary{background:rgba(255,255,255,.08);opacity:.85}
+.dl-banner.reduced .dl-banner-title{display:none;}
+.dl-banner.reduced .dl-banner-inner{padding:8px 10px;}
+@media (max-width: 700px){ .dl-banner{display:none;} }
+
+/* --- Lite adjustments --- */
+#clock, .clock-box { display:none !important; }
+#comp_logo, .logo-box { display:none !important; }
+
+/* Overlays centered (no ads/sponsor columns) */
+.overlay .ov-right { display:none !important; }
+.overlay .ov-grid { grid-template-columns: 1fr !important; }
+
+/* Controls dim on keyboard action */
+#lite_controls.dimmed { opacity: 0.35; transition: opacity .18s ease; }
+#lite_controls { transition: opacity .18s ease; }
