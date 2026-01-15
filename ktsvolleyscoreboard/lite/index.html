@@ -1,270 +1,238 @@
 <!DOCTYPE html>
+
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>KTS Volley Scoreboard Lite</title>
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/vscoreboard-lite_style.css" />
-</head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KTS Volley Scoreboard Lite</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&amp;family=Roboto:wght@300;400;700&amp;display=swap" rel="stylesheet"/>
+<link href="css/vscoreboard-lite_style.css" rel="stylesheet">
+</link></head>
 <body>
-  <div id="ov-swap" class="overlay" style="display:none;"><div class="swap-msg">🔁 CAMBIO CAMPO 🔁</div></div>
-    <div id="ov-winner" class="overlay" style="display:none;"><div class="winner-msg">VINCITORI<span id="win_team_name" class="winner-sub">TEAM NAME</span><table class="winner-table" id="win_set_table"></table></div></div>
-    
-    <div id="ov-timeout" class="overlay"><div class="ov-grid" id="grid_to"><div class="ov-left"><div class="ov-title" id="to_lbl">TIMEOUT</div><div class="ov-timer" id="to_time">00:00</div><div class="srv-msg">AL SERVIZIO: <span id="to_srv" class="srv-team-hl">...</span></div><div class="to-stats"><div class="to-box"><div>TIMEOUT</div><div class="to-val"><span id="u_to_h">0</span> - <span id="u_to_g">0</span></div></div><div class="to-box"><div>CAMBI</div><div class="to-val"><span id="u_sb_h">0</span> - <span id="u_sb_g">0</span></div></div></div></div><div class="ov-right" id="sp_cont_to"></div></div></div>
-    <div id="ov-interval" class="overlay"><div class="ov-grid" id="grid_int"><div class="ov-left"><div class="ov-title">INTERVALLO SET</div><div class="ov-timer" id="int_time">00:00</div><div class="srv-msg">AL SERVIZIO: <span id="int_srv" class="srv-team-hl">...</span></div><table class="int-table" id="int_tab"></table></div><div class="ov-right" id="sp_cont_int"></div></div></div>
-    <div id="ov-start" class="overlay"><div class="ov-grid" id="grid_st"><div class="ov-left"><div class="start-box"><div style="font-size: 5vh; color:#aaa; margin-bottom: 2vh;">INIZIO TRA</div><div class="ov-timer" id="st_time" style="margin:0">00:00:00</div><div class="srv-msg" style="margin-top:4vh">AL SERVIZIO: <span id="st_srv" class="srv-team-hl">...</span></div></div></div><div class="ov-right" id="sp_cont_st"></div></div></div>
-    
-    <div class="header"><div class="logo-box"><img id="comp_logo"></div><div class="title-box"><div id="main_title_wrapper"><span class="main-title" id="main_title">EVENT TITLE</span></div></div><div class="clock-box" id="clock">00:00</div></div>
-    <div class="main-area">
-        <div class="board" id="board_el">
-            <div class="card" id="card_home">
-                <div class="srv-banner">AL SERVIZIO</div>
-                <div class="card-side">
-                    <div class="meta-label">TIMEOUT</div><div class="dots-container" id="dots_to_home"></div>
-                    <div id="vc_wrap_home" style="display:none; flex-direction:column; align-items:center; margin-top:2vh;">
-                        <div class="meta-label">VIDEOCHECK</div><div class="dots-container" id="vc_home"></div>
-                    </div>
-                </div>
-                <div class="card-center">
-                    <div id="bar_home" class="team-bar"></div><img id="logo_home" class="team-logo"><div id="name_home" class="team-name">HOME</div>
-                    <div class="score-wrap"><div id="score_home" class="score">0</div></div>
-                    <div class="sets-lbl">SETS: <span id="sets_home">0</span></div>
-                </div>
-                <div class="card-side"><div class="meta-label">CAMBI</div><div class="dots-container" id="dots_sub_home"></div></div>
-            </div>
-            <div class="card" id="card_guest">
-                <div class="srv-banner">AL SERVIZIO</div>
-                <div class="card-side">
-                    <div class="meta-label">TIMEOUT</div><div class="dots-container" id="dots_to_guest"></div>
-                    <div id="vc_wrap_guest" style="display:none; flex-direction:column; align-items:center; margin-top:2vh;">
-                        <div class="meta-label">VIDEOCHECK</div><div class="dots-container" id="vc_guest"></div>
-                    </div>
-                </div>
-                <div class="card-center">
-                    <div id="bar_guest" class="team-bar"></div><img id="logo_guest" class="team-logo"><div id="name_guest" class="team-name">GUEST</div>
-                    <div class="score-wrap"><div id="score_guest" class="score">0</div></div>
-                    <div class="sets-lbl">SETS: <span id="sets_guest">0</span></div>
-                </div>
-                <div class="card-side"><div class="meta-label">CAMBI</div><div class="dots-container" id="dots_sub_guest"></div></div>
-            </div>
-        </div>
-    </div>
-    
-
-  <!-- Wizard -->
-  <div id="lite-wizard" class="overlay active" style="display:flex; justify-content:center; align-items:center;">
-    <div class="lite-wiz-card">
-      <div class="lite-wiz-title">KTS Volley Scoreboard Lite</div>
-      <div class="lite-wiz-sub">
+<div class="overlay" id="ov-swap" style="display:none;"><div class="swap-msg">🔁 CAMBIO CAMPO 🔁</div></div>
+<div class="overlay" id="ov-winner" style="display:none;"><div class="winner-msg">VINCITORI<span class="winner-sub" id="win_team_name">TEAM NAME</span><table class="winner-table" id="win_set_table"></table></div></div>
+<div class="overlay" id="ov-timeout"><div class="ov-grid" id="grid_to"><div class="ov-left"><div class="ov-title" id="to_lbl">TIMEOUT</div><div class="ov-timer" id="to_time">00:00</div><div class="srv-msg">AL SERVIZIO: <span class="srv-team-hl" id="to_srv">...</span></div><div class="to-stats"><div class="to-box"><div>TIMEOUT</div><div class="to-val"><span id="u_to_h">0</span> - <span id="u_to_g">0</span></div></div><div class="to-box"><div>CAMBI</div><div class="to-val"><span id="u_sb_h">0</span> - <span id="u_sb_g">0</span></div></div></div></div><div class="ov-right" id="sp_cont_to"></div></div></div>
+<div class="overlay" id="ov-interval"><div class="ov-grid" id="grid_int"><div class="ov-left"><div class="ov-title">INTERVALLO SET</div><div class="ov-timer" id="int_time">00:00</div><div class="srv-msg">AL SERVIZIO: <span class="srv-team-hl" id="int_srv">...</span></div><table class="int-table" id="int_tab"></table></div><div class="ov-right" id="sp_cont_int"></div></div></div>
+<div class="overlay" id="ov-start"><div class="ov-grid" id="grid_st"><div class="ov-left"><div class="start-box"><div style="font-size: 5vh; color:#aaa; margin-bottom: 2vh;">INIZIO TRA</div><div class="ov-timer" id="st_time" style="margin:0">00:00:00</div><div class="srv-msg" style="margin-top:4vh">AL SERVIZIO: <span class="srv-team-hl" id="st_srv">...</span></div></div></div><div class="ov-right" id="sp_cont_st"></div></div></div>
+<div class="header"><div class="logo-box"><img id="comp_logo"/></div><div class="title-box"><div id="main_title_wrapper"><span class="main-title" id="main_title">EVENT TITLE</span></div></div><div class="clock-box" id="clock">00:00</div></div>
+<div class="main-area">
+<div class="board" id="board_el">
+<div class="card" id="card_home">
+<div class="srv-banner">AL SERVIZIO</div>
+<div class="card-side">
+<div class="meta-label">TIMEOUT</div><div class="dots-container" id="dots_to_home"></div>
+<div id="vc_wrap_home" style="display:none; flex-direction:column; align-items:center; margin-top:2vh;">
+<div class="meta-label">VIDEOCHECK</div><div class="dots-container" id="vc_home"></div>
+</div>
+</div>
+<div class="card-center">
+<div class="team-bar" id="bar_home"></div><img class="team-logo" id="logo_home"/><div class="team-name" id="name_home">HOME</div>
+<div class="score-wrap"><div class="score" id="score_home">0</div></div>
+<div class="sets-lbl">SETS: <span id="sets_home">0</span></div>
+</div>
+<div class="card-side"><div class="meta-label">CAMBI</div><div class="dots-container" id="dots_sub_home"></div></div>
+</div>
+<div class="card" id="card_guest">
+<div class="srv-banner">AL SERVIZIO</div>
+<div class="card-side">
+<div class="meta-label">TIMEOUT</div><div class="dots-container" id="dots_to_guest"></div>
+<div id="vc_wrap_guest" style="display:none; flex-direction:column; align-items:center; margin-top:2vh;">
+<div class="meta-label">VIDEOCHECK</div><div class="dots-container" id="vc_guest"></div>
+</div>
+</div>
+<div class="card-center">
+<div class="team-bar" id="bar_guest"></div><img class="team-logo" id="logo_guest"/><div class="team-name" id="name_guest">GUEST</div>
+<div class="score-wrap"><div class="score" id="score_guest">0</div></div>
+<div class="sets-lbl">SETS: <span id="sets_guest">0</span></div>
+</div>
+<div class="card-side"><div class="meta-label">CAMBI</div><div class="dots-container" id="dots_sub_guest"></div></div>
+</div>
+</div>
+</div>
+<!-- Wizard -->
+<div class="overlay active" id="lite-wizard" style="display:flex; justify-content:center; align-items:center;">
+<div class="lite-wiz-card">
+<div class="lite-wiz-title">KTS Volley Scoreboard Lite</div>
+<div class="lite-wiz-sub">
         Configura il match. Sponsor e funzionalità avanzate non sono supportati in Lite.
       </div>
-
-      <div id="lite-step-1">
-        <div class="lite-wiz-title" style="font-size:3vh; margin-top:4px;">1) Squadre & Avvio</div>
-        <div class="lite-form-grid">
-          <div class="lite-row">
-            <label>Nome squadra sinistra</label>
-            <input id="w_left_name" placeholder="Es: CASA" value="CASA" />
-            <label style="margin-top:8px;">Colore squadra sinistra</label>
-            <input id="w_left_color" type="color" value="#00ff00" />
-          </div>
-          <div class="lite-row">
-            <label>Nome squadra destra</label>
-            <input id="w_right_name" placeholder="Es: OSPITI" value="OSPITI" />
-            <label style="margin-top:8px;">Colore squadra destra</label>
-            <input id="w_right_color" type="color" value="#ff0000" />
-          </div>
-
-          <div class="lite-row">
-            <label>Prima battuta</label>
-            <select id="w_first_srv">
-              <option value="left">Sinistra</option>
-              <option value="right">Destra</option>
-            </select>
-          </div>
-          <div class="lite-row">
-            <label>Squadra CASA sul lato</label>
-            <select id="w_home_side">
-              <option value="left">Sinistra</option>
-              <option value="right">Destra</option>
-            </select>
-          </div>
-
-          <div class="lite-row">
-            <label>Orario inizio (opzionale)</label>
-            <input id="w_start_time" type="time" />
-          </div>
-          
-        </div>
-
-        <div class="lite-actions">
-          
-          <button class="lite-btn primary" id="btn_step1_next">Continua →</button>
-        </div>
-      </div>
-
-      <div id="lite-step-2" style="display:none;">
-        <div class="lite-wiz-title" style="font-size:3vh; margin-top:4px;">2) Regole (come Admin)</div>
-
-        <div class="lite-form-grid">
-          <div class="lite-row">
-            <label>Tipo Match</label>
-            <select id="r_type">
-              <option value="bestOf5">Meglio di 5 (3 su 5)</option>
-              <option value="bestOf3">Meglio di 3 (2 su 3)</option>
-              <option value="fixed5">5 Set Fissi</option>
-              <option value="fixed3">3 Set Fissi</option>
-            </select>
-          </div>
-
-          <div class="lite-row">
-            <label>Punti Set</label>
-            <input type="number" id="r_pts" />
-          </div>
-          <div class="lite-row">
-            <label>Punti TB</label>
-            <input type="number" id="r_tb" />
-          </div>
-          <div class="lite-row">
-            <label>Scarto Set</label>
-            <input type="number" id="r_d_set" />
-          </div>
-          <div class="lite-row">
-            <label>Scarto TB</label>
-            <input type="number" id="r_d_tb" />
-          </div>
-
-          <div class="lite-row">
-            <label>Cambio Set</label>
-            <select id="r_swap_m">
-              <option value="standard">Sempre</option>
-              <option value="new">Ogni 2 set</option>
-              <option value="never">Mai</option>
-            </select>
-          </div>
-          <div class="lite-row">
-            <label>Cambio al TB?</label>
-            <select id="r_tb_sw">
-              <option value="true">SI</option>
-              <option value="false">NO</option>
-            </select>
-          </div>
-
-          <div class="lite-row">
-            <label>Punto Cambio (TB)</label>
-            <input type="number" id="r_tb_pt" />
-          </div>
-          <div class="lite-row">
-            <label>Animazione TB</label>
-            <select id="r_tb_an">
-              <option value="true">SI</option>
-              <option value="false">NO</option>
-            </select>
-          </div>
-
-          <div class="lite-row">
-            <label>Max Timeout</label>
-            <input type="number" id="r_max_to" />
-          </div>
-          <div class="lite-row">
-            <label>Durata Timeout (s)</label>
-            <input type="number" id="r_dur_to" />
-          </div>
-          <div class="lite-row">
-            <label>Max Cambi</label>
-            <input type="number" id="r_max_sub" />
-          </div>
-          <div class="lite-row">
-            <label>Durata Intervallo (s)</label>
-            <input type="number" id="r_dur_int" />
-          </div>
-
-          <div class="lite-row">
-            <label>Max Video Check</label>
-            <input type="number" id="r_max_vc" />
-          </div>
-          <div class="lite-row">
-            <label style="opacity:.75"> </label>
-            <div style="font-size:12px; color:#aaa; padding:10px 2px;">Se scegli "No" nello step 1, qui verrà messo 0.</div>
-          </div>
-        </div>
-
-        <div class="lite-actions">
-          <button class="lite-btn ghost" id="btn_back_step1">← Indietro</button>
-          <button class="lite-btn primary" id="btn_start_match">Avvia match</button>
-        </div>
-      </div>
-
-      <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
-        <div style="font-size:12px; color:#aaa;">Doppio click = fullscreen. Durante i countdown: click per nasconderli.</div>
-        
-      </div>
-    </div>
-  </div>
-
-  <!-- Help -->
-  <button class="lite-help-btn" id="lite_help_btn">⌨️ Tasti</button>
-  <div class="lite-help-panel hidden" id="lite_help_panel">
-    <div class="lite-help-title">Comandi</div>
-    <div class="lite-help-list" id="lite_help_list"></div>
-    <div style="margin-top:10px; font-size:12px; color:#aaa;">Undo: tieni premuto <b>C</b> e premi il tasto dell’azione.</div>
-  </div>
-
-  <!-- Controls -->
-  <div class="lite-controls" id="lite_controls">
-    <div class="row">
-      <div class="lite-pill">Sinistra: <b id="pill_left">CASA</b></div>
-      <button class="primary" id="btn_left_point">A • Punto</button>
-      <button id="btn_left_to">Q • Timeout</button>
-      <button id="btn_left_sub">Z • Cambio</button>
-      
-
-      <div class="lite-pill">Destra: <b id="pill_right">OSPITI</b></div>
-      <button class="primary" id="btn_right_point">D • Punto</button>
-      <button id="btn_right_to">E • Timeout</button>
-      <button id="btn_right_sub">X • Cambio</button>
-
-      <button class="lite-btn" id="btn_serv_left" title="Servizio Sinistra">🏐⇦</button>
-      <button class="lite-btn" id="btn_serv_right" title="Servizio Destra">🏐⇨</button>
-      <button class="lite-btn" id="btn_swap" title="Inverte Campo">🔁</button>
-
-      
-
-      <button class="lite-btn" id="btn_fs" title="Fullscreen">⛶</button>
-      <button class="lite-btn" id="btn_undo" title="Undo">↶</button>
-      <button class="danger" id="btn_reset">Nuovo match</button>
-    </div>
-  </div>
-
-  <!-- Desktop download popup -->
-  <div id="dl-popup" class="overlay" style="display:none; justify-content:center; align-items:center;">
-    <div class="lite-wiz-card" style="max-width:700px;">
-      <div class="lite-wiz-title" style="font-size:3.6vh;">Hai già la versione completa?</div>
-      <div class="lite-wiz-sub">Su desktop la versione completa è più comoda (sponsor, admin, mirror, regia…).</div>
-      <div class="lite-actions">
-        <button class="lite-btn ghost" id="dl_later">Non ora</button>
-        <a class="lite-btn primary" href="https://downloads.kekkotech.com/ktsvolleyscoreboard/info" target="_blank" style="text-decoration:none;">Vai al download</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Supabase (telemetria) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/vscoreboard-lite_script.js"></script>
-
-  <!-- Download banner (desktop) -->
-  <div id="dl-banner" class="dl-banner">
-    <div class="dl-banner-inner">
-      <div class="dl-banner-title">Hai già provato la versione completa?</div>
-      <div class="dl-banner-actions">
-        <a class="dl-banner-btn" href="https://downloads.kekkotech.com/ktsvolleyscoreboard" target="_blank" rel="noopener">Scarica</a>
-        <button id="dl-banner-toggle" class="dl-banner-btn secondary" type="button">Riduci</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="lite_footer" class="lite-footer">&copy; <span id="lite_footer_year"></span> KekkoTech Softwares - KTS Volley Scoreboard Lite</div>
-
-</body>
+<div id="lite-step-1">
+<div class="lite-wiz-title" style="font-size:3vh; margin-top:4px;">1) Squadre &amp; Avvio</div>
+<div class="lite-form-grid">
+<div class="lite-row">
+<label>Nome squadra sinistra</label>
+<input id="w_left_name" placeholder="Es: CASA" value="CASA"/>
+<label style="margin-top:8px;">Colore squadra sinistra</label>
+<input id="w_left_color" type="color" value="#00ff00"/>
+</div>
+<div class="lite-row">
+<label>Nome squadra destra</label>
+<input id="w_right_name" placeholder="Es: OSPITI" value="OSPITI"/>
+<label style="margin-top:8px;">Colore squadra destra</label>
+<input id="w_right_color" type="color" value="#ff0000"/>
+</div>
+<div class="lite-row">
+<label>Prima battuta</label>
+<select id="w_first_srv">
+<option value="left">Sinistra</option>
+<option value="right">Destra</option>
+</select>
+</div>
+<div class="lite-row">
+<label>Squadra CASA sul lato</label>
+<select id="w_home_side">
+<option value="left">Sinistra</option>
+<option value="right">Destra</option>
+</select>
+</div>
+<div class="lite-row">
+<label>Orario inizio (opzionale)</label>
+<input id="w_start_time" type="time"/>
+</div>
+</div>
+<div class="lite-actions">
+<button class="lite-btn primary" id="btn_step1_next">Continua →</button>
+</div>
+</div>
+<div id="lite-step-2" style="display:none;">
+<div class="lite-wiz-title" style="font-size:3vh; margin-top:4px;">2) Regole (come Admin)</div>
+<div class="lite-form-grid">
+<div class="lite-row">
+<label>Tipo Match</label>
+<select id="r_type">
+<option value="bestOf5">Meglio di 5 (3 su 5)</option>
+<option value="bestOf3">Meglio di 3 (2 su 3)</option>
+<option value="fixed5">5 Set Fissi</option>
+<option value="fixed3">3 Set Fissi</option>
+</select>
+</div>
+<div class="lite-row">
+<label>Punti Set</label>
+<input id="r_pts" type="number"/>
+</div>
+<div class="lite-row">
+<label>Punti TB</label>
+<input id="r_tb" type="number"/>
+</div>
+<div class="lite-row">
+<label>Scarto Set</label>
+<input id="r_d_set" type="number"/>
+</div>
+<div class="lite-row">
+<label>Scarto TB</label>
+<input id="r_d_tb" type="number"/>
+</div>
+<div class="lite-row">
+<label>Cambio Set</label>
+<select id="r_swap_m">
+<option value="standard">Sempre</option>
+<option value="new">Ogni 2 set</option>
+<option value="never">Mai</option>
+</select>
+</div>
+<div class="lite-row">
+<label>Cambio al TB?</label>
+<select id="r_tb_sw">
+<option value="true">SI</option>
+<option value="false">NO</option>
+</select>
+</div>
+<div class="lite-row">
+<label>Punto Cambio (TB)</label>
+<input id="r_tb_pt" type="number"/>
+</div>
+<div class="lite-row">
+<label>Animazione TB</label>
+<select id="r_tb_an">
+<option value="true">SI</option>
+<option value="false">NO</option>
+</select>
+</div>
+<div class="lite-row">
+<label>Max Timeout</label>
+<input id="r_max_to" type="number"/>
+</div>
+<div class="lite-row">
+<label>Durata Timeout (s)</label>
+<input id="r_dur_to" type="number"/>
+</div>
+<div class="lite-row">
+<label>Max Cambi</label>
+<input id="r_max_sub" type="number"/>
+</div>
+<div class="lite-row">
+<label>Durata Intervallo (s)</label>
+<input id="r_dur_int" type="number"/>
+</div>
+<div class="lite-row">
+<label>Max Video Check</label>
+<input id="r_max_vc" type="number"/>
+</div>
+<div class="lite-row">
+<label style="opacity:.75"> </label>
+<div style="font-size:12px; color:#aaa; padding:10px 2px;">Se scegli "No" nello step 1, qui verrà messo 0.</div>
+</div>
+</div>
+<div class="lite-actions">
+<button class="lite-btn ghost" id="btn_back_step1">← Indietro</button>
+<button class="lite-btn primary" id="btn_start_match">Avvia match</button>
+</div>
+</div>
+<div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+<div style="font-size:12px; color:#aaa;">Doppio click = fullscreen. Durante i countdown: click per nasconderli.</div>
+</div>
+</div>
+</div>
+<!-- Help -->
+<button class="lite-help-btn" id="lite_help_btn">⌨️ Tasti</button>
+<div class="lite-help-panel hidden" id="lite_help_panel">
+<div class="lite-help-title">Comandi</div>
+<div class="lite-help-list" id="lite_help_list"></div>
+<div style="margin-top:10px; font-size:12px; color:#aaa;">Undo: tieni premuto <b>C</b> e premi il tasto dell’azione.</div>
+</div>
+<!-- Controls -->
+<div class="lite-controls" id="lite_controls"><div class="mobile-icons" id="mobile-icons"><button class="mob-ic-btn" id="btn_mobile_full" title="Fullscreen">⛶</button><button class="mob-ic-btn" id="btn_mobile_undo" title="Undo">↩</button><button class="mob-ic-btn" id="btn_mobile_reset" title="Reset">⟲</button></div>
+<div class="row">
+<div class="lite-pill">Sinistra: <b id="pill_left">CASA</b></div>
+<button class="primary" id="btn_left_point">A • Punto</button>
+<button id="btn_left_to">Q • Timeout</button>
+<button id="btn_left_sub">Z • Cambio</button>
+<div class="lite-pill">Destra: <b id="pill_right">OSPITI</b></div>
+<button class="primary" id="btn_right_point">D • Punto</button>
+<button id="btn_right_to">E • Timeout</button>
+<button id="btn_right_sub">X • Cambio</button>
+<button class="lite-btn" id="btn_serv_left" title="Servizio Sinistra">🏐⇦</button>
+<button class="lite-btn" id="btn_serv_right" title="Servizio Destra">🏐⇨</button>
+<button class="lite-btn" id="btn_swap" title="Inverte Campo">🔁</button>
+<button class="lite-btn" id="btn_fs" title="Fullscreen">⛶</button>
+<button class="lite-btn" id="btn_undo" title="Undo">↶</button>
+<button class="danger" id="btn_reset">Nuovo match</button>
+</div>
+</div>
+<!-- Desktop download popup -->
+<div class="overlay" id="dl-popup" style="display:none; justify-content:center; align-items:center;">
+<div class="lite-wiz-card" style="max-width:700px;">
+<div class="lite-wiz-title" style="font-size:3.6vh;">Hai già la versione completa?</div>
+<div class="lite-wiz-sub">Su desktop la versione completa è più comoda (sponsor, admin, mirror, regia…).</div>
+<div class="lite-actions">
+<button class="lite-btn ghost" id="dl_later">Non ora</button>
+<a class="lite-btn primary" href="https://downloads.kekkotech.com/ktsvolleyscoreboard/info" style="text-decoration:none;" target="_blank">Vai al download</a>
+</div>
+</div>
+</div>
+<!-- Supabase (telemetria) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/vscoreboard-lite_script.js"></script>
+<!-- Download banner (desktop) -->
+<div class="dl-banner" id="dl-banner">
+<div class="dl-banner-inner">
+<div class="dl-banner-title">Hai già provato la versione completa?</div>
+<div class="dl-banner-actions">
+<a class="dl-banner-btn" href="https://downloads.kekkotech.com/ktsvolleyscoreboard" rel="noopener" target="_blank">Scarica</a>
+<button class="dl-banner-btn secondary" id="dl-banner-toggle" type="button">Riduci</button>
+</div>
+</div>
+</div>
+<div class="lite-footer" id="lite_footer">© <span id="lite_footer_year"></span> KekkoTech Softwares - KTS Volley Scoreboard Lite</div>
+<div class="lite-footer" id="lite_footer">© 2026 KekkoTech Softwares - KTS Volley Scoreboard Lite</div></body>
 </html>

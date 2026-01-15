@@ -404,3 +404,40 @@ body.wizard-active #btn_right_point{
   }
   #btn_fs, #btn_undo, #btn_reset{ display:inline-flex !important; }
 }
+
+
+/* --- Mobile icon bar + footer --- */
+#mobile-icons {
+  display: none;
+  gap: 10px;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 8px 10px;
+}
+
+#mobile-icons .mob-ic-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(0,0,0,0.35);
+  color: #fff;
+  font-size: 20px;
+  line-height: 1;
+}
+
+#lite_footer.lite-footer {
+  position: fixed;
+  left: 14px;
+  bottom: 10px;
+  font-size: 12px;
+  opacity: 0.85;
+  z-index: 30;
+  pointer-events: none;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.7);
+}
+
+@media (max-width: 820px) {
+  #mobile-icons { display: flex; }
+  #lite_footer { display:none; }
+}

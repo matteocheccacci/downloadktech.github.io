@@ -891,42 +891,87 @@ function applyKeyAction(k) {
   // ---------------------------
   function wireUi() {
     // Fullscreen: desktop only with Space (no double click / double tap)
+    const isMobile = window.matchMedia("(max-width: 820px)").matches || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
     function toggleFullscreen() {
-      if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
-      else document.exitFullscreen().catch(()=>{});
-    }
-if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-        else document.exitFullscreen();
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen?.().catch(() => {});
+      } else {
+        document.exitFullscreen?.().catch(() => {});
       }
+    }
+
+    // Spacebar fullscreen (desktop only)
+    document.addEventListener("keydown", (e) => {
+      const tag = document.activeElement?.tagName || "";
+      if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
+
+      if (!isMobile && (e.code === "Space" || e.key === " ")) {
+        e.preventDefault();
+        toggleFullscreen();
+        return;
+      }
+
+      // Keyboard actions (desktop only)
+      if (isMobile) return;
+
+      const k = (e.key || "").toLowerCase();
+      if (k === "c") { cHeld = true; return; }
+      applyKeyAction(k);
     });
 
-    // click-to-hide countdown + un-fade help
+    document.addEventListener("keyup", (e) => {
+      if (isMobile) return;
+      const k = (e.key || "").toLowerCase();
+      if (k === "c") cHeld = false;
+    });
+
+    // Click-to-hide countdown overlays (timeout / intervals / start)
     document.addEventListener("click", onScreenClick, { passive: true });
 
-    // Mobile / extra buttons
-    const fsBtn = document.getElementById("btn_fs");
-    if (fsBtn) fsBtn.onclick = () => {
-      if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
-      else document.exitFullscreen().catch(()=>{});
-    };
+    // Desktop controls buttons (if present)
+    const btn = (id) => document.getElementById(id);
 
-    let undoMode = false;
-    const undoBtn = document.getElementById("btn_undo");
-    if (undoBtn) undoBtn.onclick = () => {
-      undoMode = true;
-      undoBtn.classList.add("active");
-      setTimeout(() => { undoMode = false; undoBtn.classList.remove("active"); }, 2500);
-    };
+    btn("btn_left_point") && (btn("btn_left_point").onclick = () => addPoint(getTeamOnSide("left")));
+    btn("btn_right_point") && (btn("btn_right_point").onclick = () => addPoint(getTeamOnSide("right")));
+    btn("btn_left_to") && (btn("btn_left_to").onclick = () => startTimeout(getTeamOnSide("left")));
+    btn("btn_right_to") && (btn("btn_right_to").onclick = () => startTimeout(getTeamOnSide("right")));
+    btn("btn_left_sub") && (btn("btn_left_sub").onclick = () => addSub(getTeamOnSide("left")));
+    btn("btn_right_sub") && (btn("btn_right_sub").onclick = () => addSub(getTeamOnSide("right")));
+    btn("btn_serv_left") && (btn("btn_serv_left").onclick = () => setServing(getTeamOnSide("left")));
+    btn("btn_serv_right") && (btn("btn_serv_right").onclick = () => setServing(getTeamOnSide("right")));
+    btn("btn_swap") && (btn("btn_swap").onclick = () => { if (!ensureMatchActive()) return; swapSidesData(true); persist(); renderAll(); });
 
-    function mobileAction(addFn, subFn) {
-      if (!ensureMatchActive()) return;
-      if (undoMode && typeof subFn === "function") subFn();
-      else if (typeof addFn === "function") addFn();
-      dimControls();
-    }
+    // Mobile: only 3 icon buttons (fullscreen/undo/reset)
+    if (isMobile) {
+      btn("btn_left_point") && (btn("btn_left_point").style.display = "none");
+      btn("btn_right_point") && (btn("btn_right_point").style.display = "none");
+      btn("btn_left_to") && (btn("btn_left_to").style.display = "none");
+      btn("btn_right_to") && (btn("btn_right_to").style.display = "none");
+      btn("btn_left_sub") && (btn("btn_left_sub").style.display = "none");
+      btn("btn_right_sub") && (btn("btn_right_sub").style.display = "none");
+      btn("btn_serv_left") && (btn("btn_serv_left").style.display = "none");
+      btn("btn_serv_right") && (btn("btn_serv_right").style.display = "none");
+      btn("btn_swap") && (btn("btn_swap").style.display = "none");
 
-    if (IS_MOBILE) {
-      // Tap on scoreboard elements to control (no big buttons)
+      // Show icons group if exists
+      const iconBar = document.getElementById("mobile-icons");
+      if (iconBar) iconBar.style.display = "flex";
+
+      btn("btn_mobile_full") && (btn("btn_mobile_full").onclick = () => toggleFullscreen());
+
+      // Undo mode: next action within window becomes undo
+      btn("btn_mobile_undo") && (btn("btn_mobile_undo").onclick = () => {
+        mobileUndoArmed = true;
+        setTimeout(() => { mobileUndoArmed = false; }, 2500);
+      });
+
+      btn("btn_mobile_reset") && (btn("btn_mobile_reset").onclick = () => {
+        if (!confirm("Reset partita?")) return;
+        resetMatch();
+      });
+
+      // Tap interactions on infoboxes
       const scoreHome = document.getElementById("score_home");
       const scoreGuest = document.getElementById("score_guest");
       const setsHome = document.getElementById("sets_home");
@@ -939,70 +984,36 @@ if (!document.fullscreenElement) document.documentElement.requestFullscreen();
       const nmGuest = document.getElementById("name_guest");
       const titleWrap = document.getElementById("main_title_wrapper");
 
-      if (scoreHome) scoreHome.addEventListener("click", () => mobileAction(() => addPoint("home"), () => subPoint("home")), { passive:true });
-      if (scoreGuest) scoreGuest.addEventListener("click", () => mobileAction(() => addPoint("guest"), () => subPoint("guest")), { passive:true });
+      const doAct = (doFn, undoFn) => {
+        if (mobileUndoArmed) { mobileUndoArmed = false; undoFn(); }
+        else doFn();
+      };
 
-      if (setsHome) setsHome.addEventListener("click", () => mobileAction(() => adjustSets("home", +1), () => adjustSets("home", -1)), { passive:true });
-      if (setsGuest) setsGuest.addEventListener("click", () => mobileAction(() => adjustSets("guest", +1), () => adjustSets("guest", -1)), { passive:true });
+      scoreHome && scoreHome.addEventListener("click", () => doAct(() => addPoint("home"), () => subPoint("home")), { passive: true });
+      scoreGuest && scoreGuest.addEventListener("click", () => doAct(() => addPoint("guest"), () => subPoint("guest")), { passive: true });
 
-      if (toHome) toHome.addEventListener("click", () => mobileAction(() => startTimeout("home"), () => subTimeout("home")), { passive:true });
-      if (toGuest) toGuest.addEventListener("click", () => mobileAction(() => startTimeout("guest"), () => subTimeout("guest")), { passive:true });
+      setsHome && setsHome.addEventListener("click", () => doAct(() => adjustSets("home", +1), () => adjustSets("home", -1)), { passive: true });
+      setsGuest && setsGuest.addEventListener("click", () => doAct(() => adjustSets("guest", +1), () => adjustSets("guest", -1)), { passive: true });
 
-      if (subHome) subHome.addEventListener("click", () => mobileAction(() => addSub("home"), () => subSub("home")), { passive:true });
-      if (subGuest) subGuest.addEventListener("click", () => mobileAction(() => addSub("guest"), () => subSub("guest")), { passive:true });
+      toHome && toHome.addEventListener("click", () => doAct(() => startTimeout("home"), () => subTimeout("home")), { passive: true });
+      toGuest && toGuest.addEventListener("click", () => doAct(() => startTimeout("guest"), () => subTimeout("guest")), { passive: true });
 
-      if (nmHome) nmHome.addEventListener("click", () => { if (!ensureMatchActive()) return; setServing("home"); }, { passive:true });
-      if (nmGuest) nmGuest.addEventListener("click", () => { if (!ensureMatchActive()) return; setServing("guest"); }, { passive:true });
+      subHome && subHome.addEventListener("click", () => doAct(() => addSub("home"), () => subSub("home")), { passive: true });
+      subGuest && subGuest.addEventListener("click", () => doAct(() => addSub("guest"), () => subSub("guest")), { passive: true });
 
-      if (titleWrap) titleWrap.addEventListener("click", () => { if (!ensureMatchActive()) return; matchData.homeIsOnRight = !matchData.homeIsOnRight; renderAll(); persist(); }, { passive:true });
+      nmHome && nmHome.addEventListener("click", () => setServing("home"), { passive: true });
+      nmGuest && nmGuest.addEventListener("click", () => setServing("guest"), { passive: true });
+
+      titleWrap && titleWrap.addEventListener("click", () => { if (!ensureMatchActive()) return; swapSidesData(true); persist(); renderAll(); }, { passive: true });
+
+      // Hide download banner on mobile
+      const dl = document.getElementById("dl-banner");
+      if (dl) dl.style.display = "none";
+
+      // Hide keyboard help on mobile
+      const hk = document.getElementById("lite_help_panel");
+      if (hk) hk.style.display = "none";
     }
-
-
-    // Help toggle
-    $("lite_help_btn").addEventListener("click", (e) => {
-      e.stopPropagation();
-      $("lite_help_panel").classList.toggle("hidden");
-      $("lite_help_panel").classList.remove("faded");
-    });
-
-    buildHelpPanel();
-
-    // Wizard buttons
-    $("btn_step1_next").onclick = step1Next;
-    $("btn_back_step1").onclick = () => { $("lite-step-2").style.display = "none"; $("lite-step-1").style.display = "block"; };
-    $("btn_start_match").onclick = startMatch;
-    $("btn_reset").onclick = resetToWizard;
-    
-    // Controls buttons -> same actions as keys (without undo)
-    $("btn_left_point").onclick = () => addPoint(getTeamOnSide("left"));
-    $("btn_right_point").onclick = () => addPoint(getTeamOnSide("right"));
-    $("btn_left_to").onclick = () => startTimeout(getTeamOnSide("left"));
-    $("btn_right_to").onclick = () => startTimeout(getTeamOnSide("right"));
-    $("btn_left_sub").onclick = () => addSub(getTeamOnSide("left"));
-    $("btn_right_sub").onclick = () => addSub(getTeamOnSide("right"));
-    $("btn_serv_left").onclick = () => setServing(getTeamOnSide("left"));
-    $("btn_serv_right").onclick = () => setServing(getTeamOnSide("right"));
-    $("btn_swap").onclick = () => { if (!ensureMatchActive()) return; swapSidesData(true); persist(); renderAll(); };
-    // Click on timeout/sub dots like original index
-    $("dots_to_home")?.addEventListener("click", () => startTimeout("home"));
-    $("dots_to_guest")?.addEventListener("click", () => startTimeout("guest"));
-    $("dots_sub_home")?.addEventListener("click", () => addSub("home"));
-    $("dots_sub_guest")?.addEventListener("click", () => addSub("guest"));
-    
-    // Keyboard
-    document.addEventListener("keydown", (e) => {
-      // avoid when typing in wizard inputs
-      const tag = document.activeElement?.tagName || "";
-      if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
-
-      const k = (e.key || "").toLowerCase();
-      if (k === "c") { cHeld = true; return; }
-      applyKeyAction(k);
-    });
-    document.addEventListener("keyup", (e) => {
-      const k = (e.key || "").toLowerCase();
-      if (k === "c") cHeld = false;
-    });
   }
 
   // ---------------------------
