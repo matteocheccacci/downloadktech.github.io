@@ -7,9 +7,9 @@
         .logo-box img { max-height: 85%; max-width: 100%; }
         
         /* MODIFICA: Titolo spostato decisamente in alto (-3vh) */
-        .title-box { justify-self: center; text-align: center; width: 100%; overflow: hidden; white-space: nowrap; transform: translateY(-3vh); } 
+        .title-box { justify-self: center; text-align: center; width: 100%; overflow: visible; white-space: normal; display:flex; justify-content:center; align-items:center; transform: translateY(-2vh); } 
         
-        .main-title { display: inline-block; font-size: 8vh; font-weight: 700; line-height: 1; text-transform: uppercase; text-shadow: 0 4px 15px rgba(0,0,0,0.9); margin: 0 auto; will-change: transform; letter-spacing: 2px; }
+        .main-title { display: inline-block; font-size: 8vh; font-weight: 700; line-height: 1; text-transform: uppercase; letter-spacing: 2px; max-width: 100%; padding: 0 2vw; text-align: center; }
         .main-title.scrolling { animation: ticker linear infinite; padding-left: 100%; margin-right: 50px; }
         @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
         .clock-box { justify-self: end; font-size: 6vh; font-family: monospace; font-weight: bold; text-shadow: 2px 2px 0 #000; color: #ccc; }
@@ -156,16 +156,6 @@
 
 #comp_logo{ display:none !important; }
 .logo-box{ display:flex; align-items:center; justify-content:center; }
-.logo-box::after{
-  content:"LITE";
-  font-weight:900;
-  font-size:4vh;
-  letter-spacing:2px;
-  color:var(--lite-accent);
-  text-shadow: 0 3px 12px rgba(0,0,0,0.9);
-  opacity:0.85;
-}
-
 #lite-wizard.overlay{ background: rgba(0,0,0,0.94); }
 .lite-wiz-card{
   width:min(1000px, 92vw);
@@ -350,3 +340,67 @@
 /* Controls dim on keyboard action */
 #lite_controls.dimmed { opacity: 0.35; transition: opacity .18s ease; }
 #lite_controls { transition: opacity .18s ease; }
+
+
+/* --- Lite footer --- */
+.lite-footer{
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.75);
+  text-align: center;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(10px);
+  z-index: 50;
+}
+
+/* Better color picker preview */
+#lite-wizard input[type="color"]{
+  width: 100%;
+  height: 44px;
+  padding: 0;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(0,0,0,0.25);
+  cursor: pointer;
+}
+#lite-wizard input[type="color"]::-webkit-color-swatch-wrapper{ padding: 0; }
+#lite-wizard input[type="color"]::-webkit-color-swatch{
+  border: none;
+  border-radius: 12px;
+}
+#lite-wizard input[type="color"]::-moz-color-swatch{
+  border: none;
+  border-radius: 12px;
+}
+
+/* Wizard state */
+body.wizard-active #btn_left_point,
+body.wizard-active #btn_right_point{
+  display: none !important;
+}
+
+/* Desktop layout tweaks: make room for controls + footer */
+@media (min-width: 769px){
+  #board_el{ transform: translateY(-2vh); }
+}
+
+/* Mobile: simplify controls + hide hints/footer/banner */
+@media (max-width: 768px){
+  #dl-banner{ display:none !important; }
+  #lite_help_btn{ display:none !important; }
+  #lite_help_panel{ display:none !important; }
+  #lite_footer{ display:none !important; }
+
+  body.wizard-active #lite_controls{ display:none !important; }
+
+  /* Keep only icon buttons on mobile */
+  #btn_left_point, #btn_right_point, #btn_left_to, #btn_right_to, #btn_left_sub, #btn_right_sub,
+  #btn_serv_left, #btn_serv_right, #btn_swap{
+    display:none !important;
+  }
+  #btn_fs, #btn_undo, #btn_reset{ display:inline-flex !important; }
+}

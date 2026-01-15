@@ -53,6 +53,9 @@
   };
 
   const STORAGE_KEY = "vscoreboard_lite_state_v1";
+  const IS_MOBILE = window.matchMedia && window.matchMedia("(max-width: 768px)").matches;
+  document.body.classList.toggle("mobile", IS_MOBILE);
+
 
   function getInitialMatchData() {
     return {
@@ -447,7 +450,18 @@
     return true;
   }
 
-  function addPoint(teamKey) {
+  
+  function adjustSets(team, delta) {
+    if (!ensureMatchActive()) return;
+    const t = matchData.teams[team];
+    if (!t) return;
+    const max = maxSetsToWin() * 2; // generous cap
+    t.sets = Math.max(0, Math.min(max, (t.sets || 0) + delta));
+    persist();
+    renderAll();
+  }
+
+function addPoint(teamKey) {
     if (!ensureMatchActive()) return;
     matchData[teamKey].score++;
     if (matchData.serving && matchData.serving !== teamKey) matchData.serving = teamKey;
@@ -562,6 +576,7 @@
   }
 
   function openWizard() {
+    document.body.classList.add("wizard-active");
     $("lite-wizard").style.display = "flex";
     $("lite-wizard").classList.add("active");
     $("lite-step-1").style.display = "block";
@@ -569,6 +584,7 @@
   }
 
   function closeWizard() {
+    document.body.classList.remove("wizard-active");
     $("lite-wizard").classList.remove("active");
     $("lite-wizard").style.display = "none";
   }
@@ -697,10 +713,8 @@ function startMatch() {
     { label: "Timeout Destra", key: "E" },
     { label: "Cambio Sinistra", key: "Z" },
     { label: "Cambio Destra", key: "X" },
-    { label: "VideoCheck Sinistra", key: "W" },
-    { label: "VideoCheck Destra", key: "S" },
     { label: "Undo (tieni premuto)", key: "C" },
-    { label: "Fullscreen", key: "Doppio click" }
+    { label: "Fullscreen", key: "Spazio" }
   ];
 
   let cHeld = false;
@@ -876,21 +890,73 @@ function applyKeyAction(k) {
   // Wiring
   // ---------------------------
   function wireUi() {
-    // Fullscreen toggle already in original index; keep it
-    document.addEventListener("dblclick", () => {
-      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-      else document.exitFullscreen();
-    });
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "F11") {
-        e.preventDefault();
-        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+    // Fullscreen: desktop only with Space (no double click / double tap)
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+      else document.exitFullscreen().catch(()=>{});
+    }
+if (!document.fullscreenElement) document.documentElement.requestFullscreen();
         else document.exitFullscreen();
       }
     });
 
     // click-to-hide countdown + un-fade help
     document.addEventListener("click", onScreenClick, { passive: true });
+
+    // Mobile / extra buttons
+    const fsBtn = document.getElementById("btn_fs");
+    if (fsBtn) fsBtn.onclick = () => {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+      else document.exitFullscreen().catch(()=>{});
+    };
+
+    let undoMode = false;
+    const undoBtn = document.getElementById("btn_undo");
+    if (undoBtn) undoBtn.onclick = () => {
+      undoMode = true;
+      undoBtn.classList.add("active");
+      setTimeout(() => { undoMode = false; undoBtn.classList.remove("active"); }, 2500);
+    };
+
+    function mobileAction(addFn, subFn) {
+      if (!ensureMatchActive()) return;
+      if (undoMode && typeof subFn === "function") subFn();
+      else if (typeof addFn === "function") addFn();
+      dimControls();
+    }
+
+    if (IS_MOBILE) {
+      // Tap on scoreboard elements to control (no big buttons)
+      const scoreHome = document.getElementById("score_home");
+      const scoreGuest = document.getElementById("score_guest");
+      const setsHome = document.getElementById("sets_home");
+      const setsGuest = document.getElementById("sets_guest");
+      const toHome = document.getElementById("dots_to_home");
+      const toGuest = document.getElementById("dots_to_guest");
+      const subHome = document.getElementById("dots_sub_home");
+      const subGuest = document.getElementById("dots_sub_guest");
+      const nmHome = document.getElementById("name_home");
+      const nmGuest = document.getElementById("name_guest");
+      const titleWrap = document.getElementById("main_title_wrapper");
+
+      if (scoreHome) scoreHome.addEventListener("click", () => mobileAction(() => addPoint("home"), () => subPoint("home")), { passive:true });
+      if (scoreGuest) scoreGuest.addEventListener("click", () => mobileAction(() => addPoint("guest"), () => subPoint("guest")), { passive:true });
+
+      if (setsHome) setsHome.addEventListener("click", () => mobileAction(() => adjustSets("home", +1), () => adjustSets("home", -1)), { passive:true });
+      if (setsGuest) setsGuest.addEventListener("click", () => mobileAction(() => adjustSets("guest", +1), () => adjustSets("guest", -1)), { passive:true });
+
+      if (toHome) toHome.addEventListener("click", () => mobileAction(() => startTimeout("home"), () => subTimeout("home")), { passive:true });
+      if (toGuest) toGuest.addEventListener("click", () => mobileAction(() => startTimeout("guest"), () => subTimeout("guest")), { passive:true });
+
+      if (subHome) subHome.addEventListener("click", () => mobileAction(() => addSub("home"), () => subSub("home")), { passive:true });
+      if (subGuest) subGuest.addEventListener("click", () => mobileAction(() => addSub("guest"), () => subSub("guest")), { passive:true });
+
+      if (nmHome) nmHome.addEventListener("click", () => { if (!ensureMatchActive()) return; setServing("home"); }, { passive:true });
+      if (nmGuest) nmGuest.addEventListener("click", () => { if (!ensureMatchActive()) return; setServing("guest"); }, { passive:true });
+
+      if (titleWrap) titleWrap.addEventListener("click", () => { if (!ensureMatchActive()) return; matchData.homeIsOnRight = !matchData.homeIsOnRight; renderAll(); persist(); }, { passive:true });
+    }
+
 
     // Help toggle
     $("lite_help_btn").addEventListener("click", (e) => {
